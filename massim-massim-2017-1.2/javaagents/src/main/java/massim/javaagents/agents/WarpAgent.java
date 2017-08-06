@@ -110,10 +110,10 @@ public class WarpAgent extends Agent{
                     lat = p.toProlog();
                     break;
                 case "action":
-                    System.out.println("************** Action : "+p.toProlog());
+                    //System.out.println("************** Action : "+p.toProlog());
                     break;
                 case "type":
-                    System.out.println("************* Type : "+p.toProlog());
+                    //System.out.println("************* Type : "+p.toProlog());
                     break;
             }
             
