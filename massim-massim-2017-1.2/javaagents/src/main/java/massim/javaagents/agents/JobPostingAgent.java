@@ -25,7 +25,7 @@ public class JobPostingAgent extends Agent{
      */
     public JobPostingAgent(String name, MailService mailbox) {
         super(name, mailbox);
-         System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHh");
+         System.out.println("JJJJJJJJJJJJJJJ");
     }
 
     @Override

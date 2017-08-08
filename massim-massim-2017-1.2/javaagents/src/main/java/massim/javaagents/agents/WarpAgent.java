@@ -23,7 +23,12 @@ public class WarpAgent extends Agent{
     private boolean test = false;
 
     private Percept shop;
+    
+    ///*** New feature that we needed
     private boolean flag;
+    private AgentPercepts AP = new AgentPercepts(); 
+    ///***
+    
     /**
      * Constructor.
      *
@@ -33,7 +38,7 @@ public class WarpAgent extends Agent{
     public WarpAgent(String name, MailService mailbox) {
         super(name, mailbox);
         flag = false;
-        System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHh");
+        System.out.println("WWWWWWWWWWWWW");
         
     }
     
@@ -43,8 +48,22 @@ public class WarpAgent extends Agent{
     @Override
     public Action step() {
         //
+        
         List<Percept> percepts = new Vector<>();
         percepts = this.getPercepts();
+        
+        ///*** Changing percepts handle
+        AP.setPercepts(percepts);
+        if(getStepNumber() != 0) //Step Percept
+        {
+            
+        }
+        else //Initial Percept
+        {
+            AP.initialize();
+        }
+        ///***
+        
         Map<String, Percept> InitialItems = new HashMap<>();
          for (Percept p: percepts){  
             switch(p.getName()){
@@ -68,7 +87,7 @@ public class WarpAgent extends Agent{
                     }
                     break;
                 case "role":
-                    ;// System.out.println("!!!!!!!!!!!!!!" + p.getParameters().toString());
+                     System.out.println("!!!!!!!!!!!!!!" + p.getParameters().toString());
                 }
          }
         //
@@ -192,14 +211,25 @@ public class WarpAgent extends Agent{
                         System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"+itemName + "," + amount);
                         // item ----> ! sub Item
                         // select this job
-                        //
                     }
                 }
+                System.out.println("size : " + requirements.size());
+                if (requirements.size() != 1)
+                {
+                   // jobsTaken.add(myJob);  // remove job with requirements
+                }
             }
+            Iterator iit = availableJobs.iterator();
+            /*while(iit.hasNext())
+            {
+                Percept job123 = currentJobs.get(iit.next());
+                System.out.println("<<<<<<<<<<<<"+job123+">>>>>>>>>>>");
+            }*/
+            
             //
             
             if(availableJobs.size() > 0){
-                myJob = availableJobs.iterator().next();
+                myJob = availableJobs.iterator().next(); // set job to agent
                 say("I will complete " + myJob);
                 jobsTaken.add(myJob);
                 broadcast(new Percept("taken", new Identifier(myJob)), getName());

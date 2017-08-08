@@ -31,11 +31,23 @@ public class Scheduler implements AgentListener, EnvironmentListener{
     /**
      * Holds configured agent data.
      */
+    ///***
+    private int stepNumber;    
+    public void setStepNumber(int sn)
+    {
+        stepNumber = sn;
+    }
+    public int getStepNumber()
+    {
+        return stepNumber;
+    }
+    ///***
     private class AgentConf {
         String name;
         String entity;
         String team;
         String className;
+        
 
         AgentConf(String name, String entity, String team, String className){
             this.name = name;
@@ -131,8 +143,11 @@ public class Scheduler implements AgentListener, EnvironmentListener{
     void step() {
         // retrieve percepts for all agents
         List<Agent> newPerceptAgents = new Vector<>();
-        
+       
         agents.values().forEach(ag -> {
+            ///***
+            ag.setStepNumber(stepNumber);
+            ///***
             List<Percept> percepts = new Vector<>();
             try {
                 

@@ -14,7 +14,18 @@ public abstract class Agent {
     private String name;
     private MailService mailbox;
     private List<Percept> percepts = new Vector<>();
-
+    ///***
+    private int stepNumber;
+    public void setStepNumber(int sn)
+    {
+        stepNumber = sn;
+    }
+    public int getStepNumber()
+    {
+        return stepNumber;
+    }
+    ///***
+    ///***
     /**
      * Constructor
      * @param name the agent's name
