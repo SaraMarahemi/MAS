@@ -61,6 +61,7 @@ public class WarpAgent extends Agent{
         else //Initial Percept
         {
             AP.initialize();
+            
         }
         ///***
         

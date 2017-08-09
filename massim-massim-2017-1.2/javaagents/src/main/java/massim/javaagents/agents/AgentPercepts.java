@@ -26,13 +26,21 @@ public class AgentPercepts {
     private List<Percept> percepts = new Vector<>();
     //Initial Percept
     //role
-    private int battery;
-    private int load;
-    private String name;
-    private int speed;
-    private List<String> tools = new Vector<>();
+    role self;
     //item
     private List<item> itemsInEnv = new Vector<>();
+
+    public List<Percept> getPercepts() {
+        return percepts;
+    }
+
+    public role getRole() {
+        return self;
+    }
+
+    public List<item> getItems() {
+        return itemsInEnv;
+    }
     
     
 
@@ -55,17 +63,18 @@ public class AgentPercepts {
                     
                     //name 
                     eis.iilang.Identifier agName = (eis.iilang.Identifier) p.getParameters().toArray()[0];
-                    name = agName.getValue();
+                    String name = agName.getValue();
                     //speed
                     eis.iilang.Numeral agSpeed = (eis.iilang.Numeral) p.getParameters().toArray()[1];
-                    speed = agSpeed.getValue().intValue();
+                    int speed = agSpeed.getValue().intValue();
                     //load
                     eis.iilang.Numeral agLoad = (eis.iilang.Numeral) p.getParameters().toArray()[2];
-                    load = agLoad.getValue().intValue();
+                    int load = agLoad.getValue().intValue();
                     //battery
                     eis.iilang.Numeral agBattery = (eis.iilang.Numeral) p.getParameters().toArray()[3];
-                    battery = agBattery.getValue().intValue();
+                    int battery = agBattery.getValue().intValue();
                     //tools
+                    List<String> tools = new Vector<>();
                     ParameterList agTools = listParam(p, 4);
                     for (Parameter tool : agTools) 
                     {
@@ -74,6 +83,7 @@ public class AgentPercepts {
                                 tools.add(toolName);
                             }
                     }   
+                    self = new role(battery,load,name,speed,tools);
                     break;
                     
                 case "item" :
@@ -113,21 +123,6 @@ public class AgentPercepts {
                         itemParts.add(newSubItem);
                     }
                   
-                    
-                    //Cheking
-                    /*System.out.println("item name : "+itemName);
-                    System.out.println("item volume : "+itemVolume);
-                    
-                    for(int i=0; i<itemTools.size() ; i++)
-                    {
-                        System.out.println("item tool : "+itemTools.get(i));
-                    }
-                    
-                    for(int i=0; i<itemParts.size() ; i++)
-                    {
-                        System.out.println("sub item name : "+itemParts.get(i).getSubItemName());
-                        System.out.println("sub item amount : "+itemParts.get(i).getSubItemAmount());
-                    }*/
                     break;
             }
         }
