@@ -56,12 +56,11 @@ public class WarpAgent extends Agent{
         AP.setPercepts(percepts);
         if(getStepNumber() != 0) //Step Percept
         {
-            
+            AP.stepPercept();
         }
         else //Initial Percept
         {
             AP.initialize();
-            
         }
         ///***
         

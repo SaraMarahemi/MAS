@@ -28,7 +28,7 @@ public class AgentPercepts {
     //role
     role self;
     //item
-    private List<item> itemsInEnv = new Vector<>();
+    private List<massim.javaagents.agents.item> itemsInEnv = new Vector<>();
 
     public List<Percept> getPercepts() {
         return percepts;
@@ -122,10 +122,16 @@ public class AgentPercepts {
                         subItem newSubItem = new subItem(subItemName, subItemAmount);
                         itemParts.add(newSubItem);
                     }
-                  
+                    massim.javaagents.agents.item newItem = new item(itemName, itemVolume, itemTools, itemParts);
+                    itemsInEnv.add(newItem);
                     break;
             }
         }
+    }
+    
+    void stepPercept()
+    {
+        
     }
     
       /**
