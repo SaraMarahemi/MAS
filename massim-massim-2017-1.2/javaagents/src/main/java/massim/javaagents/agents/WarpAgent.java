@@ -1,5 +1,6 @@
 package massim.javaagents.agents;
 
+import massim.javaagents.percept.AgentPercepts;
 import eis.EnvironmentInterfaceStandard;
 import eis.iilang.*;
 import massim.javaagents.MailService;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package massim.javaagents.agents;
+package massim.javaagents.percept;
 
 import java.util.List;
 

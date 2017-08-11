@@ -3,21 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package massim.javaagents.agents;
+package massim.javaagents.percept;
 
 /**
  *
  * @author Sarah
  */
-public class workshop {
+public class dump {
     private String name;
     private double lat;
     private double lon;
 
-    public workshop() {
+    public dump() {
     }
 
-    public workshop(String name, double lat, double lon) {
+    public dump(String name, double lat, double lon) {
         this.name = name;
         this.lat = lat;
         this.lon = lon;
@@ -46,6 +46,5 @@ public class workshop {
     public void setLon(double lon) {
         this.lon = lon;
     }
-    
     
 }

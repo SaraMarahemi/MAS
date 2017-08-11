@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package massim.javaagents.agents;
+package massim.javaagents.percept;
 
+import massim.javaagents.percept.shopItem;
 import java.util.List;
 import java.util.Vector;
 

@@ -4,7 +4,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package massim.javaagents.agents;
+package massim.javaagents.percept;
 
 import eis.iilang.Function;
 import eis.iilang.Identifier;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import static massim.javaagents.agents.AgentPercepts.stringParam;
+import static massim.javaagents.percept.AgentPercepts.stringParam;
 import sun.rmi.runtime.NewThreadAction;
 
 /**
@@ -33,7 +33,7 @@ public class AgentPercepts {
     //role
     role selfRole;
     //item
-    private List<massim.javaagents.agents.item> itemsInEnv = new Vector<>();
+    private List<massim.javaagents.percept.item> itemsInEnv = new Vector<>();
     //self
     private self selfInfo = new self();
     //entity
@@ -244,7 +244,7 @@ public class AgentPercepts {
     }
     
     
-    void initialize ()
+    public void initialize ()
     {
         for (Percept p: percepts){  
             switch(p.getName())
@@ -311,14 +311,14 @@ public class AgentPercepts {
                         subItem newSubItem = new subItem(subItemName, subItemAmount);
                         itemParts.add(newSubItem);
                     }
-                    massim.javaagents.agents.item newItem = new item(itemName, itemVolume, itemTools, itemParts);
+                    massim.javaagents.percept.item newItem = new item(itemName, itemVolume, itemTools, itemParts);
                     itemsInEnv.add(newItem);
                     break;
             }
         }
     }
     
-    void stepPercept()
+    public void stepPercept()
     {
         for (Percept p: percepts){  
             //System.out.println("ABCDEF : All : "+p.toProlog());

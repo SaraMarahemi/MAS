@@ -3,26 +3,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package massim.javaagents.agents;
+package massim.javaagents.percept;
 
 /**
  *
  * @author Sarah
  */
-public class chargingStation {
+public class resourceNode {
+    
     private String name;
     private double lat;
     private double lon;
-    private int rate;
+    private String resource;
 
-    public chargingStation(String name, double lat, double lon, int rate) {
+    public resourceNode() {
+    }
+
+    public resourceNode(String name, double lat, double lon, String resource) {
         this.name = name;
         this.lat = lat;
         this.lon = lon;
-        this.rate = rate;
-    }
-
-    public chargingStation() {
+        this.resource = resource;
     }
 
     public String getName() {
@@ -49,12 +50,13 @@ public class chargingStation {
         this.lon = lon;
     }
 
-    public int getRate() {
-        return rate;
+    public String getResource() {
+        return resource;
     }
 
-    public void setRate(int rate) {
-        this.rate = rate;
+    public void setResource(String resource) {
+        this.resource = resource;
     }
+    
     
 }
