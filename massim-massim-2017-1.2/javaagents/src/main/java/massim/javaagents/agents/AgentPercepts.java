@@ -12,10 +12,15 @@ import eis.iilang.Numeral;
 import eis.iilang.Parameter;
 import eis.iilang.ParameterList;
 import eis.iilang.Percept;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import static massim.javaagents.agents.AgentPercepts.stringParam;
+import sun.rmi.runtime.NewThreadAction;
 
 /**
  *
@@ -45,32 +50,199 @@ public class AgentPercepts {
     private List<storage> storages = new Vector<>();
     //resourceNode
     private List<resourceNode> resourceNodes = new Vector<>();
-            
+    //step
+    private int step;
+    //route
+    private List<routeDetail> routes = new Vector<>();
+    //route length
+    private int routeLength;
+    //map
+    private String map;
+    //simSteps
+    private int simSteps;
+    //seedCapital
+    private int seedCapital;
+    //job
+    private List<job> jobs = new Vector<>();
+    //auction
+    private List<auction> auctions = new Vector<>();
+    //mission
+    private List<auction> missions = new Vector<>();
+
+   //constructore
+    public AgentPercepts() {
+    }
+    public AgentPercepts(role selfRole, int step, int routeLength, String map, int simSteps, int seedCapital) {
+        this.selfRole = selfRole;
+        this.step = step;
+        this.routeLength = routeLength;
+        this.map = map;
+        this.simSteps = simSteps;
+        this.seedCapital = seedCapital;
+    }
     
+    //setter and getter
 
     public List<Percept> getPercepts() {
         return percepts;
     }
 
-    public role getRole() {
+    public void setPercepts(List<Percept> percepts) {
+        this.percepts = percepts;
+    }
+
+    public role getSelfRole() {
         return selfRole;
     }
 
-    public List<item> getItems() {
+    public void setSelfRole(role selfRole) {
+        this.selfRole = selfRole;
+    }
+
+    public List<item> getItemsInEnv() {
         return itemsInEnv;
     }
-    
-    
 
-    public AgentPercepts() 
-    {
-        
+    public void setItemsInEnv(List<item> itemsInEnv) {
+        this.itemsInEnv = itemsInEnv;
+    }
+
+    public self getSelfInfo() {
+        return selfInfo;
+    }
+
+    public void setSelfInfo(self selfInfo) {
+        this.selfInfo = selfInfo;
+    }
+
+    public List<entity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<entity> entities) {
+        this.entities = entities;
+    }
+
+    public List<shop> getShops() {
+        return shops;
+    }
+
+    public void setShops(List<shop> shops) {
+        this.shops = shops;
+    }
+
+    public List<workshop> getWorkshops() {
+        return workshops;
+    }
+
+    public void setWorkshops(List<workshop> workshops) {
+        this.workshops = workshops;
+    }
+
+    public List<dump> getDumps() {
+        return dumps;
+    }
+
+    public void setDumps(List<dump> dumps) {
+        this.dumps = dumps;
+    }
+
+    public List<chargingStation> getChargingStations() {
+        return chargingStations;
+    }
+
+    public void setChargingStations(List<chargingStation> chargingStations) {
+        this.chargingStations = chargingStations;
+    }
+
+    public List<storage> getStorages() {
+        return storages;
+    }
+
+    public void setStorages(List<storage> storages) {
+        this.storages = storages;
+    }
+
+    public List<resourceNode> getResourceNodes() {
+        return resourceNodes;
+    }
+
+    public void setResourceNodes(List<resourceNode> resourceNodes) {
+        this.resourceNodes = resourceNodes;
+    }
+
+    public int getStep() {
+        return step;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
+    }
+
+    public List<routeDetail> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<routeDetail> routes) {
+        this.routes = routes;
+    }
+
+    public int getRouteLength() {
+        return routeLength;
+    }
+
+    public void setRouteLength(int routeLength) {
+        this.routeLength = routeLength;
+    }
+
+    public String getMap() {
+        return map;
+    }
+
+    public void setMap(String map) {
+        this.map = map;
+    }
+
+    public int getSimSteps() {
+        return simSteps;
+    }
+
+    public void setSimSteps(int simSteps) {
+        this.simSteps = simSteps;
+    }
+
+    public int getSeedCapital() {
+        return seedCapital;
+    }
+
+    public void setSeedCapital(int seedCapital) {
+        this.seedCapital = seedCapital;
+    }
+
+    public List<job> getJobs() {
+        return jobs;
+    }
+
+    public void setJobs(List<job> jobs) {
+        this.jobs = jobs;
+    }
+
+    public List<auction> getAuctions() {
+        return auctions;
+    }
+
+    public void setAuctions(List<auction> auctions) {
+        this.auctions = auctions;
+    }
+
+    public List<auction> getMissions() {
+        return missions;
+    }
+
+    public void setMissions(List<auction> missions) {
+        this.missions = missions;
     }
     
-    void setPercepts (List<Percept> p)
-    {
-        percepts = p;
-    }
     
     void initialize ()
     {
@@ -292,18 +464,18 @@ public class AgentPercepts {
                     break;
                     
                 case "chargingStation" :
-                    System.out.println("ABCDEF : chargingStation"+p.toProlog());
+                    
                     //name
                     eis.iilang.Identifier chargingStationName = (eis.iilang.Identifier)p.getParameters().toArray()[0];
                     String csName = chargingStationName.getValue();
                     
                     //lat
                     eis.iilang.Numeral chargingStationLat = (eis.iilang.Numeral) p.getParameters().get(1);
-                    int csLat = chargingStationLat.getValue().intValue();
+                    double csLat = chargingStationLat.getValue().doubleValue();
                     
                     //lon
                     eis.iilang.Numeral chargingStationLon = (eis.iilang.Numeral) p.getParameters().get(2);
-                    int csLon = chargingStationLon.getValue().intValue();
+                    double csLon = chargingStationLon.getValue().doubleValue();
                     
                     //rate
                     eis.iilang.Numeral chargingStationRate = (eis.iilang.Numeral) p.getParameters().get(3);
@@ -311,6 +483,7 @@ public class AgentPercepts {
                     
                     chargingStation newchargingStation = new chargingStation(csName, csLat, csLon,csRate);
                     chargingStations.add(newchargingStation);
+                    
                     break;
                     
                 case "dump" :
@@ -358,7 +531,7 @@ public class AgentPercepts {
                     ParameterList storageItemInfo = (ParameterList) p.getParameters().toArray()[5];
                     for(int i= 0; i< storageItemInfo.size();i++)
                     {
-                        eis.iilang.Function stItem = (eis.iilang.Function) storageItemInfo.get(0);
+                        eis.iilang.Function stItem = (eis.iilang.Function) storageItemInfo.get(i);
                         eis.iilang.Identifier stItemName = (eis.iilang.Identifier)stItem.getParameters().get(0);
                         String storageItemName = stItemName.getValue();
                         eis.iilang.Numeral stItemDelivered = (eis.iilang.Numeral) stItem.getParameters().get(1);
@@ -397,13 +570,205 @@ public class AgentPercepts {
                     break;
                     
                 case "step":
+                   
+                    eis.iilang.Numeral stepNumber = (eis.iilang.Numeral) p.getParameters().get(0);
+                    step = stepNumber.getValue().intValue();
+                    
+                    break;
+                    
                 case "route":
+                     
+                     //routes
+                    ParameterList routesInfo = (ParameterList) p.getParameters().toArray()[0];
+                    for(int i= 0; i< routesInfo.size();i++)
+                    {
+                        eis.iilang.Function routeFunction = (eis.iilang.Function) routesInfo.get(i);
+                        eis.iilang.Numeral rNumber = (eis.iilang.Numeral)routeFunction.getParameters().get(0);
+                        int routeNumber = rNumber.getValue().intValue();
+                        eis.iilang.Numeral rLat = (eis.iilang.Numeral) routeFunction.getParameters().get(1);
+                        double routeLat = rLat.getValue().doubleValue();
+                        eis.iilang.Numeral rLon = (eis.iilang.Numeral) routeFunction.getParameters().get(2);
+                        double routeLon = rLon.getValue().doubleValue();
+                        routeDetail newRouteDetail = new routeDetail(routeNumber, routeLat, routeLon);
+                        routes.add(newRouteDetail);
+                    }
+                    
+                    break;
+                    
                 case "seedCapital":
+                    
+                    eis.iilang.Numeral sCapital = (eis.iilang.Numeral) p.getParameters().get(0);
+                    seedCapital = sCapital.getValue().intValue();
+                    
+                    break;
+                    
                 case "steps":
+                    
+                    eis.iilang.Numeral s = (eis.iilang.Numeral) p.getParameters().get(0);
+                    simSteps = s.getValue().intValue();
+                    
+                    break;
+                    
                 case "map":
-                case "routeLength":
+                    
+                    eis.iilang.Identifier mapName = (eis.iilang.Identifier) p.getParameters().get(0);
+                    map = mapName.getValue();
+                    
+                    break;
+                    
+                case "routeLength": 
+                    
+                    eis.iilang.Numeral rLength = (eis.iilang.Numeral) p.getParameters().get(0);
+                    routeLength = rLength.getValue().intValue();
+                    
+                    break;
+                    
                 case "actionID":
+                    
+                    break;
                 case "job":
+                    
+                    //id
+                    eis.iilang.Identifier jID = (eis.iilang.Identifier)p.getParameters().get(0);
+                    String jobID = jID.getValue();
+                    
+                    //Storage
+                    eis.iilang.Identifier jStorage = (eis.iilang.Identifier)p.getParameters().get(1);
+                    String jobStorage = jStorage.getValue();
+                    
+                    //reward
+                    eis.iilang.Numeral jReward = (eis.iilang.Numeral) p.getParameters().get(2);
+                    int jobReward = jReward.getValue().intValue();
+                    
+                    //start
+                    eis.iilang.Numeral jStart = (eis.iilang.Numeral) p.getParameters().get(3);
+                    int jobStart = jStart.getValue().intValue();
+                    
+                    //end
+                    eis.iilang.Numeral jEnd = (eis.iilang.Numeral) p.getParameters().get(4);
+                    int jobEnd = jEnd.getValue().intValue();
+                    
+                    //required
+                    List<Pair<String,Integer>> jobRequireds = new Vector<>();
+                    ParameterList requiredsInfo = (ParameterList) p.getParameters().get(5);
+                    for(int i= 0; i< requiredsInfo.size();i++)
+                    {
+                        eis.iilang.Function reqInfo = (eis.iilang.Function) requiredsInfo.get(i);
+                        eis.iilang.Identifier reqItemName = (eis.iilang.Identifier)reqInfo.getParameters().get(0);
+                        String requiredItemName = reqItemName.getValue();
+                        eis.iilang.Numeral reqItemAmount = (eis.iilang.Numeral) reqInfo.getParameters().get(1);
+                        int requiredItemAmount = reqItemAmount.getValue().intValue();
+                        Pair<String,Integer> requiredItem = new Pair(requiredItemName, requiredItemAmount);
+                        jobRequireds.add(requiredItem);
+                    }
+                    job newJob = new job(jobID, jobStorage, jobReward, jobStart, jobEnd,jobRequireds);
+                    jobs.add(newJob);
+                    
+                    break;
+                case "auction":
+                    
+                    //id
+                    eis.iilang.Identifier aucID = (eis.iilang.Identifier)p.getParameters().get(0);
+                    String auctionID = aucID.getValue();
+                    
+                    //storage
+                    eis.iilang.Identifier aucStorage = (eis.iilang.Identifier)p.getParameters().get(1);
+                    String auctionStorage = aucStorage.getValue();
+                    
+                    //reward
+                    eis.iilang.Numeral aucReward = (eis.iilang.Numeral) p.getParameters().get(2);
+                    int auctionReward = aucReward.getValue().intValue();
+                    
+                    //start
+                    eis.iilang.Numeral aucStart = (eis.iilang.Numeral) p.getParameters().get(3);
+                    int auctionStart = aucStart.getValue().intValue();
+                    
+                    //end
+                    eis.iilang.Numeral aucEnd = (eis.iilang.Numeral) p.getParameters().get(4);
+                    int auctionEnd = aucEnd.getValue().intValue();
+                    
+                    //fine
+                    eis.iilang.Numeral aucFine = (eis.iilang.Numeral) p.getParameters().get(5);
+                    int auctionFine = aucFine.getValue().intValue();
+                    
+                    //lowestBid
+                    eis.iilang.Numeral aucLowestBid = (eis.iilang.Numeral) p.getParameters().get(6);
+                    int auctionLowestBid = aucLowestBid.getValue().intValue();
+                    
+                    //time
+                    eis.iilang.Numeral aucTime = (eis.iilang.Numeral) p.getParameters().get(7);
+                    int auctionTime = aucTime.getValue().intValue();
+                    
+                    //required
+                    List<Pair<String,Integer>> auctionRequireds = new Vector<>();
+                    ParameterList aucRequiredsInfo = (ParameterList) p.getParameters().get(8);
+                    for(int i= 0; i< aucRequiredsInfo.size();i++)
+                    {
+                        eis.iilang.Function reqInfo = (eis.iilang.Function) aucRequiredsInfo.get(i);
+                        eis.iilang.Identifier reqItemName = (eis.iilang.Identifier)reqInfo.getParameters().get(0);
+                        String requiredItemName = reqItemName.getValue();
+                        eis.iilang.Numeral reqItemAmount = (eis.iilang.Numeral) reqInfo.getParameters().get(1);
+                        int requiredItemAmount = reqItemAmount.getValue().intValue();
+                        Pair<String,Integer> requiredItem = new Pair(requiredItemName, requiredItemAmount);
+                        auctionRequireds.add(requiredItem);
+                    }
+                    auction newAuction = new auction(auctionID, auctionStorage, auctionReward, auctionStart, auctionEnd, auctionFine, auctionLowestBid, auctionTime, auctionRequireds);
+                    auctions.add(newAuction);
+                    
+                    break;
+                case "mission":
+                    
+                    //id
+                    eis.iilang.Identifier misID = (eis.iilang.Identifier)p.getParameters().get(0);
+                    String missionID = misID.getValue();
+                    
+                    //storage
+                    eis.iilang.Identifier misStorage = (eis.iilang.Identifier)p.getParameters().get(1);
+                    String missionStorage = misStorage.getValue();
+                    
+                    //reward
+                    eis.iilang.Numeral misReward = (eis.iilang.Numeral) p.getParameters().get(2);
+                    int missionReward = misReward.getValue().intValue();
+                    
+                    //start
+                    eis.iilang.Numeral misStart = (eis.iilang.Numeral) p.getParameters().get(3);
+                    int missionStart = misStart.getValue().intValue();
+                    
+                    //end
+                    eis.iilang.Numeral misEnd = (eis.iilang.Numeral) p.getParameters().get(4);
+                    int missionEnd = misEnd.getValue().intValue();
+                    
+                    //fine
+                    eis.iilang.Numeral misFine = (eis.iilang.Numeral) p.getParameters().get(5);
+                    int missionFine = misFine.getValue().intValue();
+                    
+                    //lowestBid
+                    eis.iilang.Numeral misLowestBid = (eis.iilang.Numeral) p.getParameters().get(6);
+                    int missionLowestBid = misLowestBid.getValue().intValue();
+                    
+                    //time
+                    eis.iilang.Numeral misTime = (eis.iilang.Numeral) p.getParameters().get(7);
+                    int missionTime = misTime.getValue().intValue();
+                    
+                    //null??! (8)
+                    
+                    //required
+                    List<Pair<String,Integer>> missionRequireds = new Vector<>();
+                    ParameterList misRequiredsInfo = (ParameterList) p.getParameters().get(9);
+                    for(int i= 0; i< misRequiredsInfo.size();i++)
+                    {
+                        eis.iilang.Function reqInfo = (eis.iilang.Function) misRequiredsInfo.get(i);
+                        eis.iilang.Identifier reqItemName = (eis.iilang.Identifier)reqInfo.getParameters().get(0);
+                        String requiredItemName = reqItemName.getValue();
+                        eis.iilang.Numeral reqItemAmount = (eis.iilang.Numeral) reqInfo.getParameters().get(1);
+                        int requiredItemAmount = reqItemAmount.getValue().intValue();
+                        Pair<String,Integer> requiredItem = new Pair(requiredItemName, requiredItemAmount);
+                        missionRequireds.add(requiredItem);
+                    }
+                    auction newMission = new auction(missionID, missionStorage, missionReward, missionStart, missionEnd, missionFine, missionLowestBid, missionTime, missionRequireds);
+                    missions.add(newMission);
+                    
+                    break;
             }
         }
     }
