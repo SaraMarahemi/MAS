@@ -1,10 +1,10 @@
 {
   "agents" : {
-    "Chameleon1" : {"entity" : "connectionA1", "team" : "Chameleon", "class" : "BasicAgent"},
-    "Chameleon2" : {"entity" : "connectionA2", "team" : "Chameleon", "class" : "BasicAgent"},
-    "Chameleon3" : {"entity" : "connectionA3", "team" : "Chameleon", "class" : "BasicAgent"},
-    "Chameleon4" : {"entity" : "connectionA4", "team" : "Chameleon", "class" : "BasicAgent"},
-    "Chameleon5" : {"entity" : "connectionA5", "team" : "Chameleon", "class" : "BasicAgent"},
-    "Chameleon6" : {"entity" : "connectionA6", "team" : "Chameleon", "class" : "BasicAgent"}
+    "agentA1" : {"entity" : "connectionA1", "team" : "A", "class" : "BasicAgent"},
+    "agentA2" : {"entity" : "connectionA2", "team" : "A", "class" : "BasicAgent"},
+    "agentA3" : {"entity" : "connectionA3", "team" : "A", "class" : "BasicAgent"},
+    "agentA4" : {"entity" : "connectionA4", "team" : "A", "class" : "BasicAgent"},
+    "agentA5" : {"entity" : "connectionA5", "team" : "A", "class" : "BasicAgent"},
+    "agentA6" : {"entity" : "connectionA6", "team" : "A", "class" : "BasicAgent"}
   }
 }

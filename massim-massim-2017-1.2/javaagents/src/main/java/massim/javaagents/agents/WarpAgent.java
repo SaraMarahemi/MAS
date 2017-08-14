@@ -71,6 +71,7 @@ public class WarpAgent extends Agent{
                 // parse info that is always needed
                 case "item":
                    // System.out.println("###################"+p.getParameters().toString());
+                    
                     InitialItems.putIfAbsent(stringParam(p.getParameters(), 0), p);
                     Set<String> Itemsset = new HashSet<>(InitialItems.keySet());
                     Iterator it = Itemsset.iterator();

@@ -19,6 +19,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import massim.javaagents.agents.ChAgent;
+import massim.javaagents.agents.DaeiAgent;
+import massim.javaagents.agents.EhsanAgent;
+import massim.javaagents.agents.MiladAgent;
+import massim.javaagents.agents.PeymanAgent;
+import massim.javaagents.agents.SaraAgent;
 
 /**
  * A scheduler for agent creation and execution.
@@ -109,6 +115,25 @@ public class Scheduler implements AgentListener, EnvironmentListener{
                 case "JobPostingAgent":
                     agent = new JobPostingAgent(agentConf.name, mailService);
                     break;
+                case "chAgent":
+                    agent = new ChAgent(agentConf.name, mailService);
+                    break;
+                case "EhsanAgent":
+                    agent = new EhsanAgent(agentConf.name, mailService);
+                    break;
+                case "MiladAgent":
+                    agent = new MiladAgent(agentConf.name, mailService);
+                    break;
+                case "DaeiAgent":
+                    agent = new DaeiAgent(agentConf.name, mailService);
+                    break;
+                case "SaraAgent":
+                    agent = new SaraAgent(agentConf.name, mailService);
+                    break;
+                case "PeymanAgent":
+                    agent = new PeymanAgent(agentConf.name, mailService);
+                    break;
+                    
                 // [add further types here]
                 default:
                     System.out.println("Unknown agent type/class " + agentConf.className);

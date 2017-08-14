@@ -12,12 +12,14 @@ import eis.iilang.Numeral;
 import eis.iilang.Parameter;
 import eis.iilang.ParameterList;
 import eis.iilang.Percept;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import static massim.javaagents.agents.WarpAgent.stringParam;
 
 import static massim.javaagents.percept.AgentPercepts.stringParam;
 import sun.rmi.runtime.NewThreadAction;
@@ -34,26 +36,38 @@ public class AgentPercepts {
     role selfRole;
     //item
     private List<massim.javaagents.percept.item> itemsInEnv = new Vector<>();
+    public Map<String, item> ItemsInEnv = new HashMap<>();
+    //items
+    private List<Pair<item, Integer>> carriedItems = new Vector<>();
     //self
     private self selfInfo = new self();
     //entity
     private List<entity> entities = new Vector<>();
+    public Map<String, entity> Entities = new HashMap<>();
     //shop
     private List<shop> shops = new Vector<>();
+    public Map<String, shop> Shops = new HashMap<>();
+    public Map<String, List<shop>> shopsByItem = new HashMap<>(); 
     //workshop
     private List<workshop> workshops = new Vector<>();
+    public Map<String, workshop> Workshops = new HashMap<>();
     //dumps
     private List<dump> dumps = new Vector<>();
+    public Map<String, dump> Dumps = new HashMap<>();
     //chargingStation
     private List<chargingStation> chargingStations = new Vector<>();
+    public Map<String, chargingStation> ChargingStations = new HashMap<>();
     //storage
     private List<storage> storages = new Vector<>();
+    public Map<String, storage> Storages = new HashMap<>();
     //resourceNode
     private List<resourceNode> resourceNodes = new Vector<>();
+    public Map<String, resourceNode> ResourceNodes = new HashMap<>();
     //step
     private int step;
     //route
     private List<routeDetail> routes = new Vector<>();
+    //public Map<String, routeDetail> Routes = new HashMap<>();
     //route length
     private int routeLength;
     //map
@@ -64,11 +78,14 @@ public class AgentPercepts {
     private int seedCapital;
     //job
     private List<job> jobs = new Vector<>();
+    public Map<String, job> Jobs = new HashMap<>();
     //auction
     private List<auction> auctions = new Vector<>();
+    public Map<String, auction> Auctions = new HashMap<>();
     //mission
     private List<auction> missions = new Vector<>();
-
+    public Map<String, auction> Missions = new HashMap<>();
+    
    //constructore
     public AgentPercepts() {
     }
@@ -313,6 +330,7 @@ public class AgentPercepts {
                     }
                     massim.javaagents.percept.item newItem = new item(itemName, itemVolume, itemTools, itemParts);
                     itemsInEnv.add(newItem);
+                    ItemsInEnv.putIfAbsent(itemName, newItem);
                     break;
             }
         }
@@ -324,6 +342,16 @@ public class AgentPercepts {
             //System.out.println("ABCDEF : All : "+p.toProlog());
             switch(p.getName())
             {
+                case "items" :
+                    //itemsName
+                     eis.iilang.Identifier itName = (eis.iilang.Identifier) p.getParameters().toArray()[0];
+                    String itemsName = itName.getValue();
+                    
+                    //itemsAmount
+                    eis.iilang.Numeral itAmount = (eis.iilang.Numeral) p.getParameters().toArray()[1];
+                    int itemsAmount = itAmount.getValue().intValue();
+                    carriedItems.add(new Pair<item, Integer>(ItemsInEnv.get(itemsName), itemsAmount));
+                    break;
                 case "charge" :
                     eis.iilang.Numeral batteryInfo = (eis.iilang.Numeral) p.getParameters().toArray()[0];
                     int battery = batteryInfo.getValue().intValue();
@@ -405,6 +433,7 @@ public class AgentPercepts {
                     
                     entity newEntity = new entity(entityname, entityteam, entitylat, entitylon, entityrole);
                     entities.add(newEntity);
+                    Entities.putIfAbsent(entityname, newEntity);
                     break;
                     
                 case "shop" :
@@ -438,11 +467,20 @@ public class AgentPercepts {
                         int price = shItemPrice.getValue().intValue();
                         eis.iilang.Numeral shItemAmount = (eis.iilang.Numeral) shItem.getParameters().get(2);
                         int amount = shItemAmount.getValue().intValue();
+                        
                         shopItem newShopItem = new shopItem(amount, shopItemName, price);
                         shopItems.add(newShopItem);
+                        
+                        //shops by item
+                        if(amount > 0){
+                                    shopsByItem.putIfAbsent(shopItemName, new ArrayList<>());
+                                    shopsByItem.get(shopItemName).add(new shop(shopLat, shopLon, shopName, shopRestock, shopItems));
+                                }
                     }
                     shop newShop = new shop(shopLat, shopLon, shopName, shopRestock, shopItems);
                     shops.add(newShop);
+                    Shops.putIfAbsent(shopName, newShop);
+                    
                     break;
                     
                 case "workshop" :
@@ -461,6 +499,7 @@ public class AgentPercepts {
                     
                     workshop newWorkshop = new workshop(wName, wLat, wLon);
                     workshops.add(newWorkshop);
+                    Workshops.putIfAbsent(wName, newWorkshop);
                     break;
                     
                 case "chargingStation" :
@@ -483,7 +522,7 @@ public class AgentPercepts {
                     
                     chargingStation newchargingStation = new chargingStation(csName, csLat, csLon,csRate);
                     chargingStations.add(newchargingStation);
-                    
+                    ChargingStations.putIfAbsent(csName, newchargingStation);
                     break;
                     
                 case "dump" :
@@ -502,7 +541,7 @@ public class AgentPercepts {
                     
                     dump newdump = new dump(dName, dLat, dLon);
                     dumps.add(newdump);
-                    
+                    Dumps.putIfAbsent(dName, newdump);
                     break;
                 case "storage" :
                     
@@ -544,7 +583,7 @@ public class AgentPercepts {
                     }
                     storage newStorage = new storage(storageName,storageLat, storageLon,  storageTotalCapacity, storageUsedCapacity,storageItems);
                     storages.add(newStorage);
-                    
+                    Storages.putIfAbsent(storageName, newStorage);
                     break;
                 case "resourceNode" :
                     
@@ -566,7 +605,7 @@ public class AgentPercepts {
                     
                     resourceNode newResourceNode = new resourceNode(resourceNodeName, resourceNodeLat, resourceNodeLon, resourceNodeResource);
                     resourceNodes.add(newResourceNode);
-                    
+                    ResourceNodes.putIfAbsent(resourceNodeName, newResourceNode);
                     break;
                     
                 case "step":
@@ -663,7 +702,7 @@ public class AgentPercepts {
                     }
                     job newJob = new job(jobID, jobStorage, jobReward, jobStart, jobEnd,jobRequireds);
                     jobs.add(newJob);
-                    
+                    Jobs.putIfAbsent(jobID, newJob);
                     break;
                 case "auction":
                     
@@ -714,7 +753,7 @@ public class AgentPercepts {
                     }
                     auction newAuction = new auction(auctionID, auctionStorage, auctionReward, auctionStart, auctionEnd, auctionFine, auctionLowestBid, auctionTime, auctionRequireds);
                     auctions.add(newAuction);
-                    
+                    Auctions.putIfAbsent(auctionID, newAuction);
                     break;
                 case "mission":
                     
@@ -767,7 +806,7 @@ public class AgentPercepts {
                     }
                     auction newMission = new auction(missionID, missionStorage, missionReward, missionStart, missionEnd, missionFine, missionLowestBid, missionTime, missionRequireds);
                     missions.add(newMission);
-                    
+                    Missions.putIfAbsent(missionID, newMission);
                     break;
             }
         }

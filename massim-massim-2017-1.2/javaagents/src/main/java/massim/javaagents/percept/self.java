@@ -5,6 +5,9 @@
  */
 package massim.javaagents.percept;
 
+import java.util.List;
+import java.util.Vector;
+
 /**
  *
  * @author Sarah
@@ -19,6 +22,8 @@ public class self {
     private String team;
     private String LastAction;
     private String LastActionResult;
+    private List<Pair<item, Integer>> carriedItems = new Vector<>();
+    
     private int teamMoney;
 
     public int getTeamMoney() {
@@ -29,7 +34,7 @@ public class self {
         this.teamMoney = teamMoney;
     }
 
-    public self(int charge, double lat, int load, double lon, String name, String role, String team, String LastAction, String LastActionResult) {
+    public self(int charge, double lat, int load, double lon, String name, String role, String team, String LastAction, String LastActionResult , List<Pair<item, Integer>> carriedItems) {
         this.charge = charge;
         this.lat = lat;
         this.load = load;
@@ -39,6 +44,7 @@ public class self {
         this.team = team;
         this.LastAction = LastAction;
         this.LastActionResult = LastActionResult;
+        this.carriedItems = carriedItems;
     }
 
     public self() {
@@ -114,6 +120,14 @@ public class self {
 
     public String getLastActionResult() {
         return LastActionResult;
+    }
+
+    public List<Pair<item, Integer>> getCarriedItems() {
+        return carriedItems;
+    }
+
+    public void setCarriedItems(List<Pair<item, Integer>> carriedItems) {
+        this.carriedItems = carriedItems;
     }
     
 }
