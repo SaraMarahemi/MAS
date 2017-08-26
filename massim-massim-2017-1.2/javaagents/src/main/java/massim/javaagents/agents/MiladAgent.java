@@ -18,8 +18,12 @@ import java.util.Vector;
 import massim.javaagents.MailService;
 import static massim.javaagents.agents.WarpAgent.stringParam;
 import massim.javaagents.percept.AgentPercepts;
+import massim.javaagents.percept.Pair;
+import massim.javaagents.percept.auction;
+import massim.javaagents.percept.item;
 import massim.javaagents.percept.job;
 import massim.javaagents.percept.shop;
+import massim.javaagents.percept.storage;
 
 /**
  *
@@ -70,13 +74,24 @@ public class MiladAgent extends Agent{
             return actionQueue.poll();
         }
         if (myJob == null){
-            Set<String> availableJobs = new HashSet<>(AP.Jobs.keySet());
-            availableJobs.removeAll(jobsTaken);
-            if(availableJobs.size() > 0){
-                myJob = availableJobs.iterator().next(); // set job to agent
-                jobsTaken.add(myJob);
-                broadcast(new Percept("taken", new Identifier(myJob)), getName());
-            }
+            //Set<String> availableJobs = new HashSet<>(AP.Jobs.keySet());
+            //availableJobs.removeAll(jobsTaken);
+            //if(availableJobs.size() > 0){
+                ///***
+                //1
+                DefineRequirement();
+                //2
+                //SplitRequiremnet();
+                //3
+                //chooseTask();
+                //4
+              //  DoTask();
+                
+                ///***
+               // myJob = availableJobs.iterator().next(); // set job to agent
+                //jobsTaken.add(myJob);
+                //broadcast(new Percept("taken", new Identifier(myJob)), getName());
+            //}
         }
         if(myJob != null){
             // plan the job
@@ -131,6 +146,49 @@ public class MiladAgent extends Agent{
                 jobsTaken.add(stringParam(message.getParameters(), 0));
                 break;
         }
+    }
+    private void DefineRequirement()
+    {
+        List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
+        
+        List<job> availableJobs = new Vector<>();
+        availableJobs = AP.getJobs();
+        for(int i=0; i<availableJobs.size();i++)
+        {
+            job tempJob = availableJobs.get(i);
+            for(int j=0; j<tempJob.getJobRequireds().size();j++)
+            {
+                String itemName = tempJob.getJobRequireds().get(j).getLeft();
+                Integer itemAmount = tempJob.getJobRequireds().get(j).getRight();
+                storage tempStorage = AP.Storages.get(tempJob.getJobStorage());
+                item tempItem = AP.ItemsInEnv.get(itemName);
+                Pair<item,Pair<Integer,storage>> requirement = new Pair(tempItem,new Pair(itemAmount,tempStorage));
+                Requirements.add(requirement);
+            }
+        }
+        
+        List<auction> availableMissions = new Vector<>();
+        availableMissions = AP.getMissions();
+        List<Pair<item,Pair<Integer,storage>>> MissionsRequirements = new Vector<>();
+        for(int i=0; i<availableMissions.size();i++)
+        {
+            auction tempJob = availableMissions.get(i);
+            for(int j=0; j<tempJob.getAuctionRequireds().size();j++)
+            {
+                String itemName = tempJob.getAuctionRequireds().get(j).getLeft();
+                Integer itemAmount = tempJob.getAuctionRequireds().get(j).getRight();
+                storage tempStorage = AP.Storages.get(tempJob.getAuctionStorage());
+                item tempItem = AP.ItemsInEnv.get(itemName);
+                Pair<item,Pair<Integer,storage>> requirement = new Pair(tempItem,new Pair(itemAmount,tempStorage));
+                Requirements.add(requirement);
+            }
+        }
+        if(AP.getStep() > 0)
+        {
+         Pair<item,Pair<Integer,storage>> temprequirement = new Pair(Requirements.get(0).getLeft(),new Pair(Requirements.get(0).getRight().getLeft(),Requirements.get(0).getRight().getRight()));
+        System.out.println("item : "+temprequirement.getLeft().getName()+" Amount : "+temprequirement.getRight().getLeft()+" Sotrage : "+temprequirement.getRight().getRight().getName());
+        }
+        
     }
     
 }
