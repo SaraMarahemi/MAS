@@ -39,7 +39,7 @@ public class WarpAgent extends Agent{
     public WarpAgent(String name, MailService mailbox) {
         super(name, mailbox);
         flag = false;
-        System.out.println("WWWWWWWWWWWWW");
+        //System.out.println("WWWWWWWWWWWWW");
         
     }
     
@@ -89,7 +89,7 @@ public class WarpAgent extends Agent{
                     }
                     break;
                 case "role":
-                     System.out.println("!!!!!!!!!!!!!!" + p.getParameters().toString());
+                    // System.out.println("!!!!!!!!!!!!!!" + p.getParameters().toString());
                 }
          }
         //
@@ -109,13 +109,13 @@ public class WarpAgent extends Agent{
                 // parse info that is always needed
                 case "lastAction":  
                     lastAction = stringParam(p.getParameters(), 0);
-                    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LastAction :["+lastAction+"]");
+                    //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LastAction :["+lastAction+"]");
                     break;
                 case "lastActionParams":
                     break;
                 case "lastActionResult":
                     lastActionResult = stringParam(p.getParameters(), 0);
-                    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LastActionResult :["+stringParam(p.getParameters(), 0)+"]");
+                   // System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LastActionResult :["+stringParam(p.getParameters(), 0)+"]");
                     break;
                 case "items":
                     //System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<" + p.toProlog());
@@ -165,17 +165,18 @@ public class WarpAgent extends Agent{
          
            
         
-        say("Last step I did " + lastAction);
+        //say("Last step I did " + lastAction);
 
         if(carriedItems.isEmpty()==false){
-            say("I carry " + carriedItems);
+            //say("I carry " + carriedItems);
         }
 
-        say("I am at " + lon + " " + lat);
+        //say("I am at " + lon + " " + lat);
 
         if(resourceNodes.isEmpty()==false){
             for(String nodeInfo: resourceNodes){
-                say(nodeInfo);
+                //say(nodeInfo);
+                ;
             }
         }
         //test gather action
@@ -206,16 +207,16 @@ public class WarpAgent extends Agent{
                 ParameterList requirements = listParam(job123, 5);
                 for (Parameter requirement : requirements) 
                 {
-                    System.out.println("<<<<<<<<<<<<"+job123+">>>>>>>>>>>");
+                   // System.out.println("<<<<<<<<<<<<"+job123+">>>>>>>>>>>");
                     if(requirement instanceof Function){
                         String itemName = stringParam(((Function) requirement).getParameters(), 0);
                         int amount = intParam(((Function) requirement).getParameters(), 1);
-                        System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"+itemName + "," + amount);
+                        //System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"+itemName + "," + amount);
                         // item ----> ! sub Item
                         // select this job
                     }
                 }
-                System.out.println("size : " + requirements.size());
+               // System.out.println("size : " + requirements.size());
                 if (requirements.size() != 1)
                 {
                    // jobsTaken.add(myJob);  // remove job with requirements
@@ -232,7 +233,7 @@ public class WarpAgent extends Agent{
             
             if(availableJobs.size() > 0){
                 myJob = availableJobs.iterator().next(); // set job to agent
-                say("I will complete " + myJob);
+                //say("I will complete " + myJob);
                 jobsTaken.add(myJob);
                 broadcast(new Percept("taken", new Identifier(myJob)), getName());
             }
@@ -242,21 +243,21 @@ public class WarpAgent extends Agent{
             
             if( (lastAction.compareTo("buy") == 0) &&  (lastActionResult.compareTo("successful") == 0) )
             {
-                System.out.println("If Buy was successful ********************************************************************************");
+                //System.out.println("If Buy was successful ********************************************************************************");
                 flag = true;
                 actionQueue.clear();
             }
             if(lastAction.compareTo("deliver_job")==0 && lastActionResult.compareTo("successful") == 0)
             {
-                System.out.println("If delivered job was successful ********************************************************************************");
+                //System.out.println("If delivered job was successful ********************************************************************************");
                 flag = false;
             }
          
             // 1. acquire items
-            System.out.println("1. acquire items");
+            //System.out.println("1. acquire items");
             Percept job = currentJobs.get(myJob);
             if(job == null){
-                say("I lost my job :(");
+                //say("I lost my job :(");
                 myJob = null;
                 return new Action("skip");
             }
@@ -267,24 +268,27 @@ public class WarpAgent extends Agent{
             for (Parameter requirement : requirements) {
                 if(requirement instanceof Function){
                     // 1.1 get enough items of that type
-                    System.out.println("1.1 get enough items of that type");
+                    //System.out.println("1.1 get enough items of that type");
                     String itemName = stringParam(((Function) requirement).getParameters(), 0);
                     int amount = intParam(((Function) requirement).getParameters(), 1);
                     if(itemName.equals("") || amount == -1){
-                        say("Something is wrong with this item: " + itemName + " " + amount);
+                        //say("Something is wrong with this item: " + itemName + " " + amount);
                         
                         continue;
                     }
                     // find a shop selling the item
-                    System.out.println("find a shop selling the item");
+                    //System.out.println("find a shop selling the item");
                     List<Percept> shops = shopsByItem.get(itemName);
+                    if(shops != null)
+                    {
                     if(shops.size() == 0){
-                        say("I cannot buy the item " + itemName + "; this plan won't work very well.");
+                        //say("I cannot buy the item " + itemName + "; this plan won't work very well.");
                     }
+                    
                     else{
-                        say("I will go to the shop first.");
+                        //say("I will go to the shop first.");
                         // go to the shop
-                        System.out.println("go to the shop");
+                        //System.out.println("go to the shop");
                         //Percept shop = shops.get(0);
                         if (shop == null)
                             shop = shops.get(0);
@@ -302,8 +306,9 @@ public class WarpAgent extends Agent{
                         ///*****************
                         actionQueue.add(new Action("goto", new Identifier(stringParam(shop.getParameters(), 0))));
                         // buy the items
-                        System.out.println("buy the items");
+                        //System.out.println("buy the items");
                         actionQueue.add(new Action("buy", new Identifier(itemName), new Numeral(amount)));
+                    }
                     }
                 }
             }
@@ -312,13 +317,13 @@ public class WarpAgent extends Agent{
             if (flag == true)
             {
             // 2. get items to storage
-            System.out.println("2. get items to storage");
+            //System.out.println("2. get items to storage");
             actionQueue.add(new Action("goto", new Identifier(storage)));
             // 2.1 deliver items
-            System.out.println("2.1 deliver items");
+            //System.out.println("2.1 deliver items");
             actionQueue.add(new Action("deliver_job", new Identifier(myJob)));
             }
-            
+            actionQueue.add(new Action("goto", new Identifier(storage)));
         }
 
         return actionQueue.peek() != null? actionQueue.poll() : new Action("skip");

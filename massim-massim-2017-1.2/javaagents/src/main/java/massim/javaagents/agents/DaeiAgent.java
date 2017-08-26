@@ -105,8 +105,32 @@ public class DaeiAgent extends Agent{
                     int amount = currentJob.getJobRequireds().get(i).getRight();
                     // find a shop selling the item
                     List<shop> shops = AP.shopsByItem.get(currentJob.getJobRequireds().get(i).getLeft());
-                    if (shop == null)
-                            shop = shops.get(0).getShopName();
+                    if (shop == null && shops != null)    
+                    {
+//start1
+                        System.out.println("+-+-+-+-+-+-+-+-+-+--+-+--+--+-+-+-+-+-+-+-+-+-+-+-");
+                        System.out.println(shops.get(0).getShopName());
+                        double minDistance = Double.MAX_VALUE;
+                        for (int k = 0; k < shops.size(); k++) 
+                        {
+                            shop next = shops.get(k);
+                            double shopLat = next.getShopLat();
+                            double shopLon = next.getShopLon();
+                            double agentLat = AP.getSelfInfo().getLat();
+                            double agentLon = AP.getSelfInfo().getLon();
+                            double dshop = Math.sqrt((shopLat-agentLat)*(shopLat-agentLat) + (shopLon-agentLon)*(shopLon-agentLon));
+                            String jobStorage = AP.Jobs.get(myJob).getJobStorage();
+                            double storageLat = AP.Storages.get(jobStorage).getLat();
+                            double storageLon = AP.Storages.get(jobStorage).getLon();
+                            double dstorage = Math.sqrt((shopLat-storageLat)*(shopLat-storageLat) + (shopLon-storageLon)*(shopLon-storageLon));
+                            if ((dshop + dstorage) < minDistance)
+                            {
+                                minDistance = dshop + dstorage;
+                                shop = next.getShopName();
+                            }
+                        }
+                        System.out.println(shop);
+                    }
                     actionQueue.add(new Action("goto", new Identifier(shop)));
                     // buy the items
                     actionQueue.add(new Action("buy", new Identifier(itemName), new Numeral(amount)));

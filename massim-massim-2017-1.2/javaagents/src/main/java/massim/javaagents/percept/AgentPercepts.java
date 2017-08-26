@@ -264,6 +264,7 @@ public class AgentPercepts {
     public void initialize ()
     {
         for (Percept p: percepts){  
+             //System.out.println("ABCDEF : All : "+p.toProlog());
             switch(p.getName())
             {
                 case "role" :
@@ -473,7 +474,7 @@ public class AgentPercepts {
                         
                         //shops by item
                         if(amount > 0){
-                                    shopsByItem.putIfAbsent(shopItemName, new ArrayList<>());
+                                    shopsByItem.putIfAbsent(shopItemName, new ArrayList<shop>());
                                     shopsByItem.get(shopItemName).add(new shop(shopLat, shopLon, shopName, shopRestock, shopItems));
                                 }
                     }
