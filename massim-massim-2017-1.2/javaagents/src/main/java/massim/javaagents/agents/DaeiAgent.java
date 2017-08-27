@@ -106,7 +106,7 @@ public class DaeiAgent extends Agent{
                // myJob = availableJobs.iterator().next(); // set job to agent
                 //jobsTaken.add(myJob);
                 //broadcast(new Percept("taken", new Identifier(myJob)), getName());
-                //broadcast(new Percept("taken", new Identifier(jobId),new Identifier(action),new Identifier(itemName),new Identifier(itemAmount),new Identifier(destination)), getName());
+                //broadcast(new Percept("taskTaken", new Identifier(jobId),new Identifier(action),new Identifier(itemName),new Identifier(itemAmount),new Identifier(destination)), getName());
             //}
         }
         if(myJob != null){
