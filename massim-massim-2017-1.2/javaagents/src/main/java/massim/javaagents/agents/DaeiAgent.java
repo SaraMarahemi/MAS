@@ -30,6 +30,7 @@ import massim.javaagents.percept.job;
 import massim.javaagents.percept.shop;
 import massim.javaagents.percept.storage;
 import massim.javaagents.percept.task;
+import massim.javaagents.percept.workshop;
 
 /**
  *
@@ -188,7 +189,7 @@ public class DaeiAgent extends Agent{
                 // add tasks to list
                 if (tempItem.getSubItems().size() == 0)
                 {
-                    task tempTask = new task(tempJob.getJobID(),"buy",itemName,itemAmount,"shop");
+                    task tempTask = new task(tempJob.getJobID(),"buy",itemName,itemAmount,findNearestshop(tempStorage.getName(), false));
                     DefinedTasks.add(tempTask);
                     tempTask.setTask(tempJob.getJobID(), "carryToStorage", itemName, itemAmount, tempStorage.getName());
                     DefinedTasks.add(tempTask);
@@ -197,14 +198,14 @@ public class DaeiAgent extends Agent{
                 {
                     for(int h = 0; h < tempItem.getSubItems().size(); h++)
                     {
-                        task tempTask = new task(tempJob.getJobID(),"buy",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),"shop");
+                        task tempTask = new task(tempJob.getJobID(),"buy",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),findNearestshop(tempStorage.getName(), true));
                         DefinedTasks.add(tempTask);
-                        tempTask.setTask(tempJob.getJobID(),"carryToWorkshop",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),"workshop");
+                        tempTask.setTask(tempJob.getJobID(),"carryToWorkshop",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),findNearestWorkshop(tempStorage.getName()));
                         DefinedTasks.add(tempTask);
                     }
-                    task tempTask = new task(tempJob.getJobID(),"assemble",itemName,itemAmount,"workshop");
+                    task tempTask = new task(tempJob.getJobID(),"assemble",itemName,itemAmount,findNearestWorkshop(tempStorage.getName()));
                     DefinedTasks.add(tempTask);
-                    tempTask.setTask(tempJob.getJobID(),"carryToStorage",itemName,itemAmount,"storage");
+                    tempTask.setTask(tempJob.getJobID(),"carryToStorage",itemName,itemAmount,tempStorage.getName());
                     DefinedTasks.add(tempTask);
                 }
             }
@@ -227,7 +228,7 @@ public class DaeiAgent extends Agent{
                 Requirements.add(requirement);*/
                 if (tempItem.getSubItems().size() == 0)
                 {
-                    task tempTask = new task(tempJob.getAuctionID(),"buy",itemName,itemAmount,"shop");
+                    task tempTask = new task(tempJob.getAuctionID(),"buy",itemName,itemAmount,findNearestshop(tempStorage.getName(), false));
                     DefinedTasks.add(tempTask);
                     tempTask.setTask(tempJob.getAuctionID(), "carryToStorage", itemName, itemAmount, tempStorage.getName());
                     DefinedTasks.add(tempTask);
@@ -236,14 +237,14 @@ public class DaeiAgent extends Agent{
                 {
                     for(int h = 0; h < tempItem.getSubItems().size(); h++)
                     {
-                        task tempTask = new task(tempJob.getAuctionID(),"buy",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),"shop");
+                        task tempTask = new task(tempJob.getAuctionID(),"buy",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),findNearestshop(tempStorage.getName(), true));
                         DefinedTasks.add(tempTask);
-                        tempTask.setTask(tempJob.getAuctionID(),"carryToWorkshop",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),"workshop");
+                        tempTask.setTask(tempJob.getAuctionID(),"carryToWorkshop",tempItem.getSubItems().get(h).getSubItemName(),tempItem.getSubItems().get(h).getSubItemAmount(),findNearestWorkshop(tempStorage.getName()));
                         DefinedTasks.add(tempTask);
                     }
-                    task tempTask = new task(tempJob.getAuctionID(),"assemble",itemName,itemAmount,"workshop");
+                    task tempTask = new task(tempJob.getAuctionID(),"assemble",itemName,itemAmount,findNearestWorkshop(tempStorage.getName()));
                     DefinedTasks.add(tempTask);
-                    tempTask.setTask(tempJob.getAuctionID(),"carryToStorage",itemName,itemAmount,"storage");
+                    tempTask.setTask(tempJob.getAuctionID(),"carryToStorage",itemName,itemAmount,tempStorage.getName());
                     DefinedTasks.add(tempTask);
                 }
             }
@@ -254,6 +255,76 @@ public class DaeiAgent extends Agent{
             System.out.println("item : "+temprequirement.getLeft().getName()+" Amount : "+temprequirement.getRight().getLeft()+" Sotrage : "+temprequirement.getRight().getRight().getName());
         }*/
     }
+    
+    private String findNearestWorkshop (String storage)
+    {
+        double minDistance = Double.MAX_VALUE;
+        String workshop = "";
+        storage tempStorage = AP.Storages.get(storage);
+        for (int i = 0; i < AP.getWorkshops().size(); i++)
+        {
+            workshop next = AP.getWorkshops().get(i);
+            double workshopLat = next.getLat();
+            double workshopLon = next.getLon();
+            double storageLat = tempStorage.getLat();
+            double storageLon = tempStorage.getLon();
+            double dworkshop = Math.sqrt((workshopLat-storageLat)*(workshopLat-storageLat) + (workshopLon-storageLon)*(workshopLon-storageLon));
+            if (dworkshop < minDistance)
+            {
+                minDistance = dworkshop;
+                workshop = next.getName();
+            }
+        }
+        return workshop;
+    }
+    
+    private String findNearestshop (String storage , boolean isMultiItem)
+    {
+        if (isMultiItem)
+        {
+            String workshop = findNearestWorkshop(storage);
+            double minDistance = Double.MAX_VALUE;
+            String shop = "";
+            workshop tempWorkshop = AP.Workshops.get(workshop);
+            for (int i = 0; i < AP.getShops().size(); i++)
+            {
+                shop next = AP.getShops().get(i);
+                double workshopLat = tempWorkshop.getLat();
+                double workshopLon = tempWorkshop.getLon();
+                double shopLat = next.getShopLat();
+                double shopLon = next.getShopLon();
+                double dshop = Math.sqrt((workshopLat-shopLat)*(workshopLat-shopLat) + (workshopLon-shopLon)*(workshopLon-shopLon));
+                if (dshop < minDistance)
+                {
+                    minDistance = dshop;
+                    shop = next.getShopName();
+                }
+            }
+            return shop;
+        }
+        else
+        {
+            double minDistance = Double.MAX_VALUE;
+            String shop = "";
+            storage tempStorage = AP.Storages.get(storage);
+            for (int i = 0; i < AP.getShops().size(); i++)
+            {
+                shop next = AP.getShops().get(i);
+                double shopLat = next.getShopLat();
+                double shopLon = next.getShopLon();
+                double storageLat = tempStorage.getLat();
+                double storageLon = tempStorage.getLon();
+                double dshop = Math.sqrt((shopLat-storageLat)*(shopLat-storageLat) + (shopLon-storageLon)*(shopLon-storageLon));
+                if (dshop < minDistance)
+                {
+                    minDistance = dshop;
+                    shop = next.getShopName();
+                }
+            }
+            return shop;
+        }
+    }
+    
     private static int intParam(List<Parameter> params, int index){
         if(params.size() < index + 1) return -1;
         Parameter param = params.get(index);
