@@ -26,7 +26,13 @@ public class task {
         this.amount = amount;
         this.destination = destination;
     }
-
+    public void setTask(String job, String action, String item, int amount, String destination) {
+        this.job = job;
+        this.action = action;
+        this.item = item;
+        this.amount = amount;
+        this.destination = destination;
+    }
     public String getJob() {
         return job;
     }
