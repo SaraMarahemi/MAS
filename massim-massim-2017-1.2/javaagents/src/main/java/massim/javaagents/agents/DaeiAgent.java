@@ -9,34 +9,48 @@ import eis.iilang.Action;
 import eis.iilang.Identifier;
 import eis.iilang.Numeral;
 import eis.iilang.Percept;
+import static java.nio.file.Files.list;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
+import jdk.nashorn.internal.ir.RuntimeNode;
 import massim.javaagents.MailService;
 import static massim.javaagents.agents.WarpAgent.stringParam;
 import massim.javaagents.percept.AgentPercepts;
+import massim.javaagents.percept.Pair;
+import massim.javaagents.percept.auction;
+import massim.javaagents.percept.item;
 import massim.javaagents.percept.job;
 import massim.javaagents.percept.shop;
+import massim.javaagents.percept.storage;
 
 /**
  *
- * @author Sarah
+ * @author Daei
  */
 public class DaeiAgent extends Agent{
+    
     private AgentPercepts AP = new AgentPercepts(); 
     private Queue<Action> actionQueue = new LinkedList<>();
     private String myJob;
     private String shop;
     private Set<String> jobsTaken = new HashSet<>();
     private boolean flag;
+    //private List<Pair<item,Integer>> carriedItemsList ;
+    private Map<item, Integer> carriedItemsList = new HashMap<>();
+    private List<job> DefinedJobs = new Vector<>();
+    private List<auction> DefinedMissions = new Vector<>();
+    List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
     
     public DaeiAgent(String name, MailService mailbox) {
         super(name, mailbox);
         flag = false;
-        System.out.println("Daei Agent");
+        System.out.println("Milad Agent");
     }
 
     @Override
@@ -61,6 +75,9 @@ public class DaeiAgent extends Agent{
         ///***
     }
 
+
+
+
     @Override
     public Action step() {
         //Percept
@@ -70,13 +87,24 @@ public class DaeiAgent extends Agent{
             return actionQueue.poll();
         }
         if (myJob == null){
-            Set<String> availableJobs = new HashSet<>(AP.Jobs.keySet());
-            availableJobs.removeAll(jobsTaken);
-            if(availableJobs.size() > 0){
-                myJob = availableJobs.iterator().next(); // set job to agent
-                jobsTaken.add(myJob);
-                broadcast(new Percept("taken", new Identifier(myJob)), getName());
-            }
+            //Set<String> availableJobs = new HashSet<>(AP.Jobs.keySet());
+            //availableJobs.removeAll(jobsTaken);
+            //if(availableJobs.size() > 0){
+                ///***
+                //1
+                List<Pair<item,Pair<Integer,storage>>> req = DefineRequirement();
+                //2
+                SplitRequiremnet(req);
+                //3
+                //chooseTask();
+                //4
+              //  DoTask();
+                
+                ///***
+               // myJob = availableJobs.iterator().next(); // set job to agent
+                //jobsTaken.add(myJob);
+                //broadcast(new Percept("taken", new Identifier(myJob)), getName());
+            //}
         }
         if(myJob != null){
             // plan the job
@@ -105,32 +133,8 @@ public class DaeiAgent extends Agent{
                     int amount = currentJob.getJobRequireds().get(i).getRight();
                     // find a shop selling the item
                     List<shop> shops = AP.shopsByItem.get(currentJob.getJobRequireds().get(i).getLeft());
-                    if (shop == null && shops != null)    
-                    {
-//start1
-                        System.out.println("+-+-+-+-+-+-+-+-+-+--+-+--+--+-+-+-+-+-+-+-+-+-+-+-");
-                        System.out.println(shops.get(0).getShopName());
-                        double minDistance = Double.MAX_VALUE;
-                        for (int k = 0; k < shops.size(); k++) 
-                        {
-                            shop next = shops.get(k);
-                            double shopLat = next.getShopLat();
-                            double shopLon = next.getShopLon();
-                            double agentLat = AP.getSelfInfo().getLat();
-                            double agentLon = AP.getSelfInfo().getLon();
-                            double dshop = Math.sqrt((shopLat-agentLat)*(shopLat-agentLat) + (shopLon-agentLon)*(shopLon-agentLon));
-                            String jobStorage = AP.Jobs.get(myJob).getJobStorage();
-                            double storageLat = AP.Storages.get(jobStorage).getLat();
-                            double storageLon = AP.Storages.get(jobStorage).getLon();
-                            double dstorage = Math.sqrt((shopLat-storageLat)*(shopLat-storageLat) + (shopLon-storageLon)*(shopLon-storageLon));
-                            if ((dshop + dstorage) < minDistance)
-                            {
-                                minDistance = dshop + dstorage;
-                                shop = next.getShopName();
-                            }
-                        }
-                        System.out.println(shop);
-                    }
+                    if (shop == null)
+                            shop = shops.get(0).getShopName();
                     actionQueue.add(new Action("goto", new Identifier(shop)));
                     // buy the items
                     actionQueue.add(new Action("buy", new Identifier(itemName), new Numeral(amount)));
@@ -148,6 +152,9 @@ public class DaeiAgent extends Agent{
         
     }
 
+
+
+
     @Override
     public void handleMessage(Percept message, String sender) {
         switch (message.getName()){
@@ -155,6 +162,82 @@ public class DaeiAgent extends Agent{
                 jobsTaken.add(stringParam(message.getParameters(), 0));
                 break;
         }
+    }
+    
+    private void SplitRequiremnet(List<Pair<item,Pair<Integer,storage>>> req)
+    {
+        List<Pair<String,Pair<item,Pair<Integer,String>>>> taskList = new Vector<>();
+        for(int i=0; i < req.size() ; i++)
+        {
+            carriedItemsList.putIfAbsent(req.get(i).getLeft(),0);
+            if (req.get(i).getRight().getLeft() > carriedItemsList.get(req.get(i).getLeft()))
+            {
+                if(req.get(i).getLeft().getSubItems().size() == 0)
+                {
+                    taskList.add(new Pair("buy",new Pair(req.get(i).getLeft(),new Pair(req.get(i).getRight().getLeft(),"shop"))));
+                }
+                else
+                {
+                    for(int j = 0; j < req.get(i).getLeft().getSubItems().size(); j++)
+                    {
+                        taskList.add(new Pair("buy",new Pair(AP.ItemsInEnv.get(req.get(i).getLeft().getSubItems().get(j).getSubItemName()),new Pair(req.get(i).getLeft().getSubItems().get(j).getSubItemAmount(),"shop"))));
+                    }
+                }
+            }
+            else
+            {
+                System.out.println("carry");
+            }
+            
+            //carriedItemsList.put(req.get(i).getLeft(), carriedItemsList.get(req.get(i).getLeft()) + req.get(i).getRight().getLeft());
+        }
+        
+    }
+    
+    private List<Pair<item,Pair<Integer,storage>>> DefineRequirement()
+    {
+        
+        List<job> availableJobs = new Vector<>();
+        availableJobs = AP.getJobs();
+        availableJobs.removeAll(DefinedJobs);
+        for(int i=0; i<availableJobs.size();i++)
+        {
+            job tempJob = availableJobs.get(i);
+            DefinedJobs.add(tempJob);
+            for(int j=0; j<tempJob.getJobRequireds().size();j++)
+            {
+                String itemName = tempJob.getJobRequireds().get(j).getLeft();
+                Integer itemAmount = tempJob.getJobRequireds().get(j).getRight();
+                storage tempStorage = AP.Storages.get(tempJob.getJobStorage());
+                item tempItem = AP.ItemsInEnv.get(itemName);
+                Pair<item,Pair<Integer,storage>> requirement = new Pair(tempItem,new Pair(itemAmount,tempStorage));
+                Requirements.add(requirement);
+            }
+        }
+        
+        List<auction> availableMissions = new Vector<>();
+        availableMissions = AP.getMissions();
+        availableMissions.removeAll(DefinedMissions);
+        for(int i=0; i<availableMissions.size();i++)
+        {
+            auction tempJob = availableMissions.get(i);
+            DefinedMissions.add(tempJob);
+            for(int j=0; j<tempJob.getAuctionRequireds().size();j++)
+            {
+                String itemName = tempJob.getAuctionRequireds().get(j).getLeft();
+                Integer itemAmount = tempJob.getAuctionRequireds().get(j).getRight();
+                storage tempStorage = AP.Storages.get(tempJob.getAuctionStorage());
+                item tempItem = AP.ItemsInEnv.get(itemName);
+                Pair<item,Pair<Integer,storage>> requirement = new Pair(tempItem,new Pair(itemAmount,tempStorage));
+                Requirements.add(requirement);
+            }
+        }
+        if(AP.getStep() > 0)
+        {
+            Pair<item,Pair<Integer,storage>> temprequirement = new Pair(Requirements.get(0).getLeft(),new Pair(Requirements.get(0).getRight().getLeft(),Requirements.get(0).getRight().getRight()));
+            System.out.println("item : "+temprequirement.getLeft().getName()+" Amount : "+temprequirement.getRight().getLeft()+" Sotrage : "+temprequirement.getRight().getRight().getName());
+        }
+        return Requirements;
     }
     
 }
