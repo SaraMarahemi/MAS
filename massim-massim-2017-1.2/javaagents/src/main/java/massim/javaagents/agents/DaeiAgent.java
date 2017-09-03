@@ -25,6 +25,7 @@ import static massim.javaagents.agents.WarpAgent.stringParam;
 import massim.javaagents.percept.AgentPercepts;
 import massim.javaagents.percept.Pair;
 import massim.javaagents.percept.auction;
+import massim.javaagents.percept.chargingStation;
 import massim.javaagents.percept.item;
 import massim.javaagents.percept.job;
 import massim.javaagents.percept.shop;
@@ -48,6 +49,7 @@ public class DaeiAgent extends Agent{
     private List<task> DefinedTasks = new Vector<>();
     private List<task> takenTasks = new Vector<>();
     private List<auction> DefinedMissions = new Vector<>();
+    private task myTask;
     //List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
     
     public DaeiAgent(String name, MailService mailbox) {
@@ -99,7 +101,7 @@ public class DaeiAgent extends Agent{
                 //2
                 //SplitRequiremnet(req);
                 //3
-                //chooseTask();
+                chooseTask();
                 //4
               //  DoTask();
                 
@@ -330,5 +332,125 @@ public class DaeiAgent extends Agent{
         Parameter param = params.get(index);
         if(param instanceof Numeral) return ((Numeral) param).getValue().intValue();
         return -1;
+    }
+    private void chooseTask()
+    {
+        //avalable tasks
+        DefinedTasks.removeAll(takenTasks);
+        //
+        task tempTask = new task();
+        double dist;
+        double minDistance = Double.MAX_VALUE;
+        for(int i=0 ; i<DefinedTasks.size() ; i++)
+        {
+            switch(DefinedTasks.get(i).getAction())
+            {
+                
+                case "carryToWorkshop":
+                    if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
+                    {
+                         tempTask = DefinedTasks.get(i);
+                    }
+                    break;
+                case "carryToStorage":
+                    if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
+                    {
+                        tempTask = DefinedTasks.get(i);
+                     //myTask = DefinedTasks.get(i);
+                     //takenTasks.add(myTask);
+                     //broadcast(new Percept("taskTaken", new Identifier(DefinedTasks.get(i).getJob()),new Identifier(DefinedTasks.get(i).getAction()),new Identifier(DefinedTasks.get(i).getItem()),new Identifier(String.valueOf(DefinedTasks.get(i).getAmount())),new Identifier(DefinedTasks.get(i).getDestination())), getName());
+                    }
+                    break;
+                case "assemble":
+                    
+                    break;
+            }
+            
+        }
+        for(int i=0 ; i<DefinedTasks.size() ; i++)
+        {
+            switch(DefinedTasks.get(i).getAction())
+            {
+                case "buy":
+//                    if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
+//                    {
+//                        //no need to buy and remove this task
+//                        tempTask.setAction("NoAction");
+//                    }
+                    dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Shops.get(DefinedTasks.get(i).getDestination()).getShopLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Shops.get(DefinedTasks.get(i).getDestination()).getShopLon(),2) );
+                    if(dist < minDistance)
+                    {
+                        tempTask = DefinedTasks.get(i);
+                    }
+                    break;
+            }
+        }
+        
+        myTask = tempTask;
+        takenTasks.add(myTask);
+        broadcast(new Percept("taskTaken", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
+                    
+    }
+    
+    private void doTask()
+    {
+        //check charge
+        checkCharge();
+    }
+    private void checkCharge()
+    {
+        double dist = 10;
+        switch(myTask.getAction())
+        {
+            case "buy":
+                dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Shops.get(myTask.getDestination()).getShopLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Shops.get(myTask.getDestination()).getShopLon(),2) );
+                break;
+            case "assemble":
+                dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Workshops.get(myTask.getDestination()).getLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Workshops.get(myTask.getDestination()).getLon(),2) );
+                break;
+            case "carryToWorkshop":
+                dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Workshops.get(myTask.getDestination()).getLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Workshops.get(myTask.getDestination()).getLon(),2) );
+                break;
+            case "carryToStorage":
+                dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Storages.get(myTask.getDestination()).getLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Storages.get(myTask.getDestination()).getLon(),2) );
+                break;
+        }
+        
+        Pair<String,Double> chargingStationInfo = findNearestChargeStation();
+        dist = chargingStationInfo.getRight();
+        int currentCharge = AP.getSelfInfo().getCharge();
+        int expectedCharge = (int) ((dist/(AP.getSelfRole().getSpeed()))*10);
+        int chargeTH = 10;
+        if(currentCharge - expectedCharge < chargeTH)
+        {
+            //pause current task and go to charge station
+        }
+        else
+        {
+           //do task
+        }
+                
+        
+    }
+     private Pair<String,Double> findNearestChargeStation ()
+    {
+        double minDistance = Double.MAX_VALUE;
+        String chargeStation = "";
+        
+        for (int i = 0; i < AP.getChargingStations().size(); i++)
+        {
+            chargingStation next = AP.getChargingStations().get(i);
+            double stationLat = next.getLat();
+            double stationLon = next.getLon();
+            double myLat = AP.getSelfInfo().getLat();
+            double myLon = AP.getSelfInfo().getLon();
+            double dstation = Math.sqrt((stationLat-myLat)*(stationLat-myLat) + (stationLon-myLon)*(stationLon-myLon));
+            if (dstation < minDistance)
+            {
+                minDistance = dstation;
+                chargeStation = next.getName();
+            }
+        }
+        return new Pair<String,Double> (chargeStation,minDistance);
     }
 }

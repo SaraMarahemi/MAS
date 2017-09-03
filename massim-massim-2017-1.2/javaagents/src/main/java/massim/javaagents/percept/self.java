@@ -129,5 +129,18 @@ public class self {
     public void setCarriedItems(List<Pair<item, Integer>> carriedItems) {
         this.carriedItems = carriedItems;
     }
-    
+    public boolean haveItem(String itemName, int itemAmount)
+    {
+        for(int i=0; i<carriedItems.size() ; i++)
+        {
+            if(carriedItems.get(i).getLeft().getName().compareTo(itemName) == 0 )
+            {
+                if(carriedItems.get(i).getRight().intValue() == itemAmount )
+                {
+                 return true;   
+                }
+            }
+        }
+        return false;
+    }
 }
