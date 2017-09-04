@@ -1,10 +1,32 @@
 {
   "agents" : {
-    "agentA1" : {"entity" : "connectionA1", "team" : "A", "class" : "BasicAgent"},
-    "agentA2" : {"entity" : "connectionA2", "team" : "A", "class" : "BasicAgent"},
-    "agentA3" : {"entity" : "connectionA3", "team" : "A", "class" : "BasicAgent"},
-    "agentA4" : {"entity" : "connectionA4", "team" : "A", "class" : "BasicAgent"},
-    "agentA5" : {"entity" : "connectionA5", "team" : "A", "class" : "BasicAgent"},
-    "agentA6" : {"entity" : "connectionA6", "team" : "A", "class" : "BasicAgent"}
+    "Chameleon1" : {"entity" : "connectionA1", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon2" : {"entity" : "connectionA2", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon3" : {"entity" : "connectionA3", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon4" : {"entity" : "connectionA4", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon5" : {"entity" : "connectionA5", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon6" : {"entity" : "connectionA6", "team" : "Chameleon", "class" : "SaraAgent"},
+	"Chameleon7" : {"entity" : "connectionA7", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon8" : {"entity" : "connectionA8", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon9" : {"entity" : "connectionA9", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon10" : {"entity" : "connectionA10", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon11" : {"entity" : "connectionA11", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon12" : {"entity" : "connectionA12", "team" : "Chameleon", "class" : "SaraAgent"},
+	"Chameleon13" : {"entity" : "connectionA13", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon14" : {"entity" : "connectionA14", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon15" : {"entity" : "connectionA15", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon16" : {"entity" : "connectionA16", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon17" : {"entity" : "connectionA17", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon18" : {"entity" : "connectionA18", "team" : "Chameleon", "class" : "SaraAgent"},
+	"Chameleon19" : {"entity" : "connectionA19", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon20" : {"entity" : "connectionA20", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon21" : {"entity" : "connectionA21", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon22" : {"entity" : "connectionA22", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon23" : {"entity" : "connectionA23", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon24" : {"entity" : "connectionA24", "team" : "Chameleon", "class" : "SaraAgent"},
+	"Chameleon25" : {"entity" : "connectionA25", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon26" : {"entity" : "connectionA26", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon27" : {"entity" : "connectionA27", "team" : "Chameleon", "class" : "SaraAgent"},
+    "Chameleon28" : {"entity" : "connectionA28", "team" : "Chameleon", "class" : "SaraAgent"}
   }
 }
