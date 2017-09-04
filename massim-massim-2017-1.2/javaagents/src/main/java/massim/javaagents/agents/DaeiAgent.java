@@ -50,12 +50,13 @@ public class DaeiAgent extends Agent{
     private List<task> takenTasks = new Vector<>();
     private List<auction> DefinedMissions = new Vector<>();
     private task myTask;
+    private boolean pauseMyTask;
     //List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
     
     public DaeiAgent(String name, MailService mailbox) {
         super(name, mailbox);
         flag = false;
-        System.out.println("Milad Agent");
+        pauseMyTask = false;
     }
 
     @Override
@@ -91,7 +92,7 @@ public class DaeiAgent extends Agent{
         {
             return actionQueue.poll();
         }
-        if (myJob == null){
+        if (myTask == null){
             //Set<String> availableJobs = new HashSet<>(AP.Jobs.keySet());
             //availableJobs.removeAll(jobsTaken);
             //if(availableJobs.size() > 0){
@@ -112,8 +113,21 @@ public class DaeiAgent extends Agent{
                 //broadcast(new Percept("taskTaken", new Identifier(jobId),new Identifier(action),new Identifier(itemName),new Identifier(itemAmount),new Identifier(destination)), getName());
             //}
         }
-        if(myJob != null){
+        if(myTask != null)
+        {
+            if(pauseMyTask == true)
+            {
+                charge();
+            }
+            if(pauseMyTask == false)
+            {
+                doTask();
+            }
+            
+        }
+        /*if(myJob != null){
             // plan the job
+            
             if( (AP.getSelfInfo().getLastAction().compareTo("buy") == 0) &&  (AP.getSelfInfo().getLastAction().compareTo("successful") == 0) )
             {
                 flag = true;
@@ -153,8 +167,9 @@ public class DaeiAgent extends Agent{
                 // 2.1 deliver items
                 actionQueue.add(new Action("deliver_job", new Identifier(myJob)));
             }
-        }
-        return actionQueue.peek() != null? actionQueue.poll() : new Action("skip");
+        }*/
+//       
+         return actionQueue.peek() != null? actionQueue.poll() : new Action("recharge");
         
     }
 
@@ -395,9 +410,31 @@ public class DaeiAgent extends Agent{
     private void doTask()
     {
         //check charge
-        checkCharge();
+        if( checkCharge() == false )
+        {
+            //do charge
+            actionQueue.add(new Action("goto", new Identifier(findNearestChargeStation().getLeft())));
+            pauseMyTask =true;
+            return;
+            
+        }
+        switch(myTask.getAction())
+        {
+            case "buy":
+                buy();
+                break;
+            case "carryToWorkshop":
+                carryToWorkshop();
+                break;
+            case "carryToStorage":
+                carryToStorage();
+                break;
+            case "assemble":
+                assemble();
+              break;  
+        }
     }
-    private void checkCharge()
+    private boolean checkCharge()
     {
         double dist = 10;
         switch(myTask.getAction())
@@ -424,10 +461,12 @@ public class DaeiAgent extends Agent{
         if(currentCharge - expectedCharge < chargeTH)
         {
             //pause current task and go to charge station
+            return false;
         }
         else
         {
            //do task
+            return true;
         }
                 
         
@@ -453,4 +492,93 @@ public class DaeiAgent extends Agent{
         }
         return new Pair<String,Double> (chargeStation,minDistance);
     }
+     
+     private void charge()
+     {
+         if( (AP.getSelfInfo().getLastAction().compareTo("charge") == 0) &&  (AP.getSelfInfo().getLastActionResult().compareTo("successful") == 0) )
+         {
+             if(AP.getSelfInfo().getCharge() > AP.getSelfRole().getBattery()-5)
+             {
+                pauseMyTask = false;
+                actionQueue.clear();
+             }
+             else
+             {
+                 actionQueue.add(new Action("charge"));
+             }
+             return;
+         }   
+         int routeLength = AP.getRouteLength();
+         if (AP.getRoutes().size() >1 && routeLength>1)
+         {
+             actionQueue.add(new Action("goto", new Identifier(findNearestChargeStation().getLeft())));
+         }
+         else
+         {
+             actionQueue.add(new Action("goto", new Identifier(findNearestChargeStation().getLeft())));
+             actionQueue.add(new Action("charge"));
+         }
+         
+     }
+     private void buy()
+     {
+         if( (AP.getSelfInfo().getLastAction().compareTo("buy") == 0) &&  (AP.getSelfInfo().getLastActionResult().compareTo("successful") == 0) )
+         {
+            //task is done!
+             myTask = null;
+             actionQueue.clear();
+             return;
+         }
+         int routeLength = AP.getRouteLength();
+         if (AP.getRoutes().size() >1 && routeLength>1)
+         {
+            actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+         }
+         else
+         {
+             actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+             actionQueue.add(new Action("buy", new Identifier(myTask.getItem()), new Numeral(myTask.getAmount())));
+         }
+         
+     }
+     private void carryToStorage()
+     {
+         if( (AP.getSelfInfo().getLastAction().compareTo("deliver_job") == 0) &&  (AP.getSelfInfo().getLastActionResult().compareTo("successful") == 0) )
+         {
+            //task is done!
+             myTask = null;
+             actionQueue.clear();
+             return;
+         }
+         int routeLength = AP.getRouteLength();
+         if (AP.getRoutes().size() >1 && routeLength>1)
+         {
+            actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+         }
+         else
+         {
+             actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+             actionQueue.add(new Action("deliver_job", new Identifier(myTask.getJob())));
+         }
+     }
+     private void carryToWorkshop()
+     {
+         int routeLength = AP.getRouteLength();
+         if (AP.getRoutes().size() >1 && routeLength>1)
+         {
+            actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+         }
+         else
+         {
+             actionQueue.add(new Action("goto", new Identifier(myTask.getDestination())));
+             myTask = null;
+         }
+     }
+     private void assemble()
+     {
+          actionQueue.add(new Action("assemble", new Identifier(myTask.getItem())));
+          actionQueue.add(new Action("assemble", new Identifier(myTask.getItem())));
+          myTask = null;
+     }
+     
 }
