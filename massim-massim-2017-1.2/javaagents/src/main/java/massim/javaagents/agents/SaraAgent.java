@@ -156,7 +156,7 @@ public class SaraAgent extends Agent{
             if(currentJob == null && currentMission == null && currentAuction == null){
                 say("I lost my job :(");
                 currentJob = null;
-                return new Action("skip");
+                return new Action("recharge");
             }
             //***
             //Doing Job
@@ -191,7 +191,7 @@ public class SaraAgent extends Agent{
         else
         {
            // System.out.println("actionQueue.peek() == null");
-            return new Action("skip");
+            return new Action("recharge");
         }
         
         
