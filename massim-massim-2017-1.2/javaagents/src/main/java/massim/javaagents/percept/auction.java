@@ -25,7 +25,17 @@ public class auction {
 
     public auction() {
     }
-
+    public auction(auction tempauction) {
+        this.auctionEnd = tempauction.getAuctionEnd();
+        this.auctionFine = tempauction.getAuctionFine();
+        this.auctionID = tempauction.getAuctionID();
+        this.auctionLowestBid = tempauction.getAuctionLowestBid();
+        this.auctionRequireds = tempauction.getAuctionRequireds();
+        this.auctionReward = tempauction.getAuctionReward();
+        this.auctionStart = tempauction.getAuctionStart();
+        this.auctionStorage = tempauction.getAuctionStorage();
+        this.auctionTime = tempauction.getAuctionTime();
+    }
     public auction(String auctionID, String auctionStorage, int auctionReward, int auctionStart, int auctionEnd, int auctionFine, int auctionLowestBid, int auctionTime, List<Pair<String, Integer>> auctionRequireds) {
         this.auctionID = auctionID;
         this.auctionStorage = auctionStorage;
@@ -109,6 +119,11 @@ public class auction {
     public void setAuctionRequireds(List<Pair<String, Integer>> auctionRequireds) {
         this.auctionRequireds = auctionRequireds;
     }
-        
+    public boolean compareTo(auction tempJob)
+    {
+        if( this.auctionID.compareTo(tempJob.auctionID)==0 )
+            return true;
+        return false;
+    }  
         
 }

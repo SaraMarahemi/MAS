@@ -22,7 +22,15 @@ public class job {
 
     public job() {
     }
-
+    
+    public job(job tempJob) {
+        this.jobEnd = tempJob.jobEnd;
+        this.jobID = tempJob.jobID;
+        this.jobRequireds = tempJob.jobRequireds;
+        this.jobReward = tempJob.jobReward;
+        this.jobStart = tempJob.jobStart;
+        this.jobStorage = tempJob.jobStorage;
+    }
     public job(String jobID, String jobStorage, int jobReward, int jobStart, int jobEnd , List<Pair<String,Integer>> jobRequireds ) {
         this.jobID = jobID;
         this.jobStorage = jobStorage;
@@ -79,7 +87,12 @@ public class job {
     public void setJobRequireds(List<Pair<String, Integer>> jobRequireds) {
         this.jobRequireds = jobRequireds;
     }
-    
+    public boolean compareTo(job tempJob)
+    {
+        if( this.jobID.compareTo(tempJob.jobID)==0 )
+            return true;
+        return false;
+    }
     
     
 }

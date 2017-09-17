@@ -332,6 +332,7 @@ public class AgentPercepts {
                     massim.javaagents.percept.item newItem = new item(itemName, itemVolume, itemTools, itemParts);
                     itemsInEnv.add(newItem);
                     ItemsInEnv.putIfAbsent(itemName, newItem);
+                    
                     break;
             }
         }
@@ -339,11 +340,26 @@ public class AgentPercepts {
     
     public void stepPercept()
     {
+        carriedItems.clear();
+        Entities.clear();
+        shops.clear();
+        workshops.clear();
+        chargingStations.clear();
+        dumps.clear();
+        resourceNodes.clear();
+        storages.clear();
+        routes.clear();
+        jobs.clear();
+        auctions.clear();
+        missions.clear();
+        shopsByItem.clear();
+        
         for (Percept p: percepts){  
             //System.out.println("ABCDEF : All : "+p.toProlog());
             switch(p.getName())
             {
-                case "items" :
+                case "hasItem" :
+                    
                     //itemsName
                      eis.iilang.Identifier itName = (eis.iilang.Identifier) p.getParameters().toArray()[0];
                     String itemsName = itName.getValue();
@@ -352,6 +368,8 @@ public class AgentPercepts {
                     eis.iilang.Numeral itAmount = (eis.iilang.Numeral) p.getParameters().toArray()[1];
                     int itemsAmount = itAmount.getValue().intValue();
                     carriedItems.add(new Pair<item, Integer>(ItemsInEnv.get(itemsName), itemsAmount));
+                    
+                    selfInfo.setCarriedItems(carriedItems);
                     break;
                 case "charge" :
                     eis.iilang.Numeral batteryInfo = (eis.iilang.Numeral) p.getParameters().toArray()[0];
@@ -461,7 +479,7 @@ public class AgentPercepts {
                     ParameterList shopItemInfo = (ParameterList) p.getParameters().toArray()[4];
                     for(int i= 0; i< shopItemInfo.size();i++)
                     {
-                        eis.iilang.Function shItem = (eis.iilang.Function) shopItemInfo.get(0);
+                        eis.iilang.Function shItem = (eis.iilang.Function) shopItemInfo.get(i);
                         eis.iilang.Identifier shItemName = (eis.iilang.Identifier)shItem.getParameters().get(0);
                         String shopItemName = shItemName.getValue();
                         eis.iilang.Numeral shItemPrice = (eis.iilang.Numeral) shItem.getParameters().get(1);
@@ -473,12 +491,14 @@ public class AgentPercepts {
                         shopItems.add(newShopItem);
                         
                         //shops by item
-                        if(amount > 0){
+                        //if(amount > 0){
+                        
                                     shopsByItem.putIfAbsent(shopItemName, new ArrayList<shop>());
                                     shopsByItem.get(shopItemName).add(new shop(shopLat, shopLon, shopName, shopRestock, shopItems));
-                                }
+                        //        }
                     }
                     shop newShop = new shop(shopLat, shopLon, shopName, shopRestock, shopItems);
+                    //newShop.addShopItemToMap();
                     shops.add(newShop);
                     Shops.putIfAbsent(shopName, newShop);
                     

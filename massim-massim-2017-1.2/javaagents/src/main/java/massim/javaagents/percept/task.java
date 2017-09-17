@@ -18,7 +18,14 @@ public class task {
 
     public task() {
     }
-
+    
+    public task(task tempTask) {
+        this.job = tempTask.job;
+        this.action = tempTask.action;
+        this.item = tempTask.item;
+        this.amount = tempTask.amount;
+        this.destination = tempTask.destination;
+    }
     public task(String job, String action, String item, int amount, String destination) {
         this.job = job;
         this.action = action;
@@ -72,5 +79,17 @@ public class task {
     public void setDestination(String destination) {
         this.destination = destination;
     }
-    
+    public boolean compareTo (task tempTask)
+    {
+        if(this.job.compareTo(tempTask.getJob()) == 0 
+                & this.action.compareTo(tempTask.getAction())== 0
+                //& this.destination.compareTo(tempTask.getDestination()) == 0
+                //& this.amount == tempTask.getAmount()
+                //& this.item.compareTo(tempTask.getItem()) == 0
+                )
+        {
+            return true;
+        }
+        return false;
+    }
 }

@@ -131,8 +131,10 @@ public class self {
     }
     public boolean haveItem(String itemName, int itemAmount)
     {
+        //System.out.println("Have Item Function");
         for(int i=0; i<carriedItems.size() ; i++)
         {
+            //System.out.println("-> haveItem() -> carriedItem : "+carriedItems.get(i).getLeft().getName()+carriedItems.get(i).getRight().intValue());
             if(carriedItems.get(i).getLeft().getName().compareTo(itemName) == 0 )
             {
                 if(carriedItems.get(i).getRight().intValue() == itemAmount )

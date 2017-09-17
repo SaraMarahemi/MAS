@@ -5,8 +5,10 @@
  */
 package massim.javaagents.percept;
 
+import java.util.HashMap;
 import massim.javaagents.percept.shopItem;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -20,6 +22,7 @@ public class shop {
     private String shopName;
     private int shopRestock;
     private List<shopItem> shopItems = new Vector<>();
+    public Map<String, shopItem> ShopItemsMap = new HashMap<>();
 
     public shop(double shopLat, double shopLon, String shopName, int shopRestock, List<shopItem> shopItems) {
         this.shopLat = shopLat;
@@ -27,6 +30,15 @@ public class shop {
         this.shopName = shopName;
         this.shopRestock = shopRestock;
         this.shopItems = shopItems;
+        addShopItemToMap();
+    }
+
+    public Map<String, shopItem> getShopItemsMap() {
+        return ShopItemsMap;
+    }
+
+    public void setShopItemsMap(Map<String, shopItem> ShopItemsMap) {
+        this.ShopItemsMap = ShopItemsMap;
     }
 
     public double getShopLat() {
@@ -68,6 +80,12 @@ public class shop {
     public void setShopItems(List<shopItem> shopItems) {
         this.shopItems = shopItems;
     }
-    
+    public void addShopItemToMap ()
+    {
+        for(int i=0; i<shopItems.size() ; i++)
+        {
+            ShopItemsMap.putIfAbsent(shopItems.get(i).getName(), shopItems.get(i));
+        }
+    }
     
 }
