@@ -721,7 +721,10 @@ public class AgentPercepts {
                         Pair<String,Integer> requiredItem = new Pair(requiredItemName, requiredItemAmount);
                         jobRequireds.add(requiredItem);
                     }
-                    job newJob = new job(jobID, jobStorage, jobReward, jobStart, jobEnd,jobRequireds);
+                    boolean isSimple = true;
+                    if(requiredsInfo.size() > 1)
+                        isSimple = false;
+                    job newJob = new job(jobID, jobStorage, jobReward, jobStart, jobEnd,jobRequireds, isSimple);
                     jobs.add(newJob);
                     Jobs.putIfAbsent(jobID, newJob);
                     break;

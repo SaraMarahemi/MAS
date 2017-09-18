@@ -18,6 +18,7 @@ public class job {
     private int jobReward;
     private int jobStart;
     private int jobEnd;
+    private boolean isSimple;
     private List<Pair<String,Integer>> jobRequireds= new Vector<>();
 
     public job() {
@@ -30,14 +31,24 @@ public class job {
         this.jobReward = tempJob.jobReward;
         this.jobStart = tempJob.jobStart;
         this.jobStorage = tempJob.jobStorage;
+        this.isSimple = tempJob.isSimple;
     }
-    public job(String jobID, String jobStorage, int jobReward, int jobStart, int jobEnd , List<Pair<String,Integer>> jobRequireds ) {
+    public job(String jobID, String jobStorage, int jobReward, int jobStart, int jobEnd , List<Pair<String,Integer>> jobRequireds,boolean isSimple ) {
         this.jobID = jobID;
         this.jobStorage = jobStorage;
         this.jobReward = jobReward;
         this.jobStart = jobStart;
         this.jobEnd = jobEnd;
         this.jobRequireds = jobRequireds;
+        this.isSimple = isSimple;
+    }
+
+    public boolean isIsSimple() {
+        return isSimple;
+    }
+
+    public void setIsSimple(boolean isSimple) {
+        this.isSimple = isSimple;
     }
 
     public String getJobID() {
