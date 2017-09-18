@@ -10,9 +10,12 @@ import eis.iilang.Identifier;
 import eis.iilang.Numeral;
 import eis.iilang.Parameter;
 import eis.iilang.Percept;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
@@ -48,6 +51,7 @@ public class MiladAgent extends Agent{
     private task myTask;
     private boolean pauseMyTask;
     private boolean hasTask;
+    public Map<String, List<String>> Tools = new HashMap<>();
     //List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
     
     public MiladAgent(String name, MailService mailbox) {
@@ -56,6 +60,8 @@ public class MiladAgent extends Agent{
         pauseMyTask = false;
         myTask = new task();
         hasTask = false;
+       
+//        
     }
 
     @Override
@@ -79,13 +85,31 @@ public class MiladAgent extends Agent{
         }
         ///***
     }
-
+    private void sayMyTool()
+    {
+        for(int i=0 ; i<AP.getSelfRole().getTools().size() ; i++)
+        {
+            broadcast(new Percept("MyTool", new Identifier(AP.getSelfRole().getTools().get(i))), getName());
+        }
+    }
     
     @Override
     public Action step() {
         System.out.println("Start me : "+getName()+" myTask : "+myTask.getAction()+myTask.getJob());
         //Percept
         makePerceptObjects();
+        sayMyTool();
+        
+            for (String name: Tools.keySet()){
+                    
+                List<String> value = Tools.get(name);  
+                System.out.println("Tools -> "+name);
+                for(int j=0; j<value.size() ; j++)  
+                {
+                    System.out.println("*** "+value.get(j));
+                }
+            }
+        
         /*for(int i=0; i<AP.getItemsInEnv().size();i++)
         {
             System.out.println("**** "+AP.getItemsInEnv().get(i).getName());
@@ -133,6 +157,17 @@ public class MiladAgent extends Agent{
                 //System.out.println("TakenTasks Handle Message :  agentName"+getName()+tempTask.getAction()+tempTask.getJob() );
                 takenTasks.add(tempTask);
                 break;
+            case "MyTool":
+                if((Tools.containsKey(stringParam(message.getParameters(), 0))) == false)
+                {
+                    Tools.putIfAbsent(stringParam(message.getParameters(), 0), new ArrayList<String>());
+                }
+                
+                if(Tools.get(stringParam(message.getParameters(), 0)).contains(sender))
+                    ;
+                else
+                    Tools.get(stringParam(message.getParameters(), 0)).add(sender);
+                break;
         }
     }
     
@@ -179,7 +214,7 @@ public class MiladAgent extends Agent{
                     DefinedTasks.add(new task(tempJob.getJobID(), "carryToStorage", itemName, itemAmount, tempStorage.getName()));
                      
                 }
-                else //tempItem is a multiItem
+               /* else //tempItem is a multiItem
                 {
                     for(int g=0; g<itemAmount ; g++)
                     {
@@ -231,7 +266,7 @@ public class MiladAgent extends Agent{
                                         for(int k=0 ; k<tempSubSubItem.getTools().size();k++)
                                         {
                                             //System.out.println("##^^^ ##^^^ tempItem subtools :"+tempSubSubItem.getTools().get(k));
-                                            DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempSubSubItem.getTools().get(k),1,findNearestshop(tempStorage.getName(),tempSubSubItem.getTools().get(k),1, true)));
+                                            //DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempSubSubItem.getTools().get(k),1,findNearestshop(tempStorage.getName(),tempSubSubItem.getTools().get(k),1, true)));
                                             DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempSubSubItem.getTools().get(k),1,findNearestWorkshop(tempStorage.getName())));
                                         }
                                         DefinedTasks.add(new task(tempJob.getJobID(),"assemble",subSubItem.getSubItemName(),subSubItem.getSubItemAmount(),findNearestWorkshop(tempStorage.getName())));
@@ -243,7 +278,7 @@ public class MiladAgent extends Agent{
                                 for(int v=0; v<subItem.getTools().size() ; v++)
                                 {
                                     //System.out.println("##^^^ tempItem subtools :"+subItem.getTools().get(v));
-                                    DefinedTasks.add(new task(tempJob.getJobID(),"buy",subItem.getTools().get(v),1,findNearestshop(tempStorage.getName(),subItem.getTools().get(v),1, true)));
+                                    //DefinedTasks.add(new task(tempJob.getJobID(),"buy",subItem.getTools().get(v),1,findNearestshop(tempStorage.getName(),subItem.getTools().get(v),1, true)));
                                     DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subItem.getTools().get(v),1,findNearestWorkshop(tempStorage.getName())));
                                 }
                                 DefinedTasks.add(new task(tempJob.getJobID(),"assemble",tempSubItemName,tempSubItemAmount,findNearestWorkshop(tempStorage.getName())));
@@ -254,14 +289,14 @@ public class MiladAgent extends Agent{
                         for(int h = 0; h < tempItem.getTools().size(); h++)
                         {
                             //System.out.println("^^ tempItem subtools :"+tempItem.getTools().get(h));
-                            DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempItem.getTools().get(h),1,findNearestshop(tempStorage.getName(),tempItem.getTools().get(h),1, true)));
+                            //DefinedTasks.add(new task(tempJob.getJobID(),"buyForAssemble",tempItem.getTools().get(h),1,findNearestshop(tempStorage.getName(),tempItem.getTools().get(h),1, true)));
                             DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempItem.getTools().get(h),1,findNearestWorkshop(tempStorage.getName())));
                         }
                         //???
                         DefinedTasks.add(new task(tempJob.getJobID(),"assemble",tempItem.getName(),itemAmount,findNearestWorkshop(tempStorage.getName())));
                         DefinedTasks.add(new task(tempJob.getJobID(),"carryToStorage",tempItem.getName(),itemAmount,tempStorage.getName()));
                     }
-                }
+                }*/
             }
         }
         
@@ -284,7 +319,7 @@ public class MiladAgent extends Agent{
            
         }
         //***
-        for(int i=0; i<availableMissions.size();i++)
+        /*for(int i=0; i<availableMissions.size();i++)
         {
             auction tempJob = new auction();
             tempJob = availableMissions.get(i);
@@ -358,7 +393,7 @@ public class MiladAgent extends Agent{
                                         for(int k=0 ; k<tempSubSubItem.getTools().size();k++)
                                         {
                                             //System.out.println("##^^^ ##^^^ tempItem subtools :"+tempSubSubItem.getTools().get(k));
-                                            DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",tempSubSubItem.getTools().get(k),1,findNearestshop(tempStorage.getName(),tempSubSubItem.getTools().get(k),1, true)));
+                                            //DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",tempSubSubItem.getTools().get(k),1,findNearestshop(tempStorage.getName(),tempSubSubItem.getTools().get(k),1, true)));
                                             DefinedTasks.add(new task(tempJob.getAuctionID(),"carryToWorkshop",tempSubSubItem.getTools().get(k),1,findNearestWorkshop(tempStorage.getName())));
                                         }
                                         DefinedTasks.add(new task(tempJob.getAuctionID(),"assemble",subSubItem.getSubItemName(),subSubItem.getSubItemAmount(),findNearestWorkshop(tempStorage.getName())));
@@ -370,7 +405,7 @@ public class MiladAgent extends Agent{
                                 for(int v=0; v<subItem.getTools().size() ; v++)
                                 {
                                     //System.out.println("##^^^ tempItem subtools :"+subItem.getTools().get(v));
-                                    DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",subItem.getTools().get(v),1,findNearestshop(tempStorage.getName(),subItem.getTools().get(v),1, true)));
+                                    //DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",subItem.getTools().get(v),1,findNearestshop(tempStorage.getName(),subItem.getTools().get(v),1, true)));
                                     DefinedTasks.add(new task(tempJob.getAuctionID(),"carryToWorkshop",subItem.getTools().get(v),1,findNearestWorkshop(tempStorage.getName())));
                                 }
                                 DefinedTasks.add(new task(tempJob.getAuctionID(),"assemble",tempSubItemName,tempSubItemAmount,findNearestWorkshop(tempStorage.getName())));
@@ -382,7 +417,7 @@ public class MiladAgent extends Agent{
                         for(int h = 0; h < tempItem.getTools().size(); h++)
                         {
                             //System.out.println("^^ tempItem subtools :"+tempItem.getTools().get(h));
-                            DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",tempItem.getTools().get(h),1,findNearestshop(tempStorage.getName(),tempItem.getTools().get(h),1, true)));
+                            //DefinedTasks.add(new task(tempJob.getAuctionID(),"buy",tempItem.getTools().get(h),1,findNearestshop(tempStorage.getName(),tempItem.getTools().get(h),1, true)));
                             DefinedTasks.add(new task(tempJob.getAuctionID(),"carryToWorkshop",tempItem.getTools().get(h),1,findNearestWorkshop(tempStorage.getName())));
                         }
                         //???
@@ -392,7 +427,7 @@ public class MiladAgent extends Agent{
                 }
             }
         }
-        
+        */
         //for(int i=0; i<DefinedTasks.size();i++)
         //{
             //System.out.println("#1#ABCDE  DefinedRequirementAndTasks.get(i) : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getDestination()+DefinedTasks.get(i).getItem()+DefinedTasks.get(i).getJob()+DefinedTasks.get(i).getAmount());
@@ -528,14 +563,14 @@ public class MiladAgent extends Agent{
             {
                 
                 case "carryToWorkshop":
-                    if( AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()) 
+                   /* if( AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()) 
                       ||
                         AP.getSelfRole().haveTool(DefinedTasks.get(i).getItem())
                        )
                     {
                          tempTask = DefinedTasks.get(i);
                          //System.out.println("initial tempTask");
-                    }
+                    }*/
                     break;
                 case "carryToStorage":
                     //System.out.println("#--# carryToStorage case");
@@ -788,6 +823,7 @@ public class MiladAgent extends Agent{
            )
          {
              //arrive to workshop
+             System.out.println("--- arrive to workshop ---");
              hasTask = false;
              actionQueue.clear();
              return;
@@ -811,4 +847,10 @@ public class MiladAgent extends Agent{
           //myTask = null;
           hasTask = false;
      }
+     public static String stringParam(List<Parameter> params, int index){
+        if(params.size() < index + 1) return "";
+        Parameter param = params.get(index);
+        if(param instanceof Identifier) return ((Identifier) param).getValue();
+        return "";
+    }
 }

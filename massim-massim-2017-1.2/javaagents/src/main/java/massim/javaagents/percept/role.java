@@ -72,10 +72,10 @@ public class role {
     
     public boolean haveTool(String toolName)
     {
-        System.out.println("Have Tool Function");
+        //System.out.println("Have Tool Function");
         for(int i=0; i<tools.size() ; i++)
         {
-            System.out.println("-> haveTool() -> ToolItem : "+tools.get(i));
+            //System.out.println("-> haveTool() -> ToolItem : "+tools.get(i));
             if(tools.get(i).compareTo(toolName) == 0 )
             {
                  return true;   
