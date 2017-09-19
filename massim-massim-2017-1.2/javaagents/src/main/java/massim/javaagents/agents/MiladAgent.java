@@ -5,6 +5,7 @@
  */
 package massim.javaagents.agents;
 
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import eis.iilang.Action;
 import eis.iilang.Identifier;
 import eis.iilang.Numeral;
@@ -20,7 +21,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
 import massim.javaagents.MailService;
-import static massim.javaagents.agents.WarpAgent.stringParam;
 import massim.javaagents.percept.AgentPercepts;
 import massim.javaagents.percept.Pair;
 import massim.javaagents.percept.auction;
@@ -52,6 +52,12 @@ public class MiladAgent extends Agent{
     private boolean pauseMyTask;
     private boolean hasTask;
     public Map<String, List<String>> Tools = new HashMap<>();
+    private List <task> assembleComplete = new Vector<>();
+    private boolean hasJob;
+    private int counter;
+    public Map<String, List<task>> DoingAssembles = new HashMap<>();
+    private Map<String,List<String>> agentsDoingAssemble = new HashMap<>();
+            
     //List<Pair<item,Pair<Integer,storage>>> Requirements = new Vector<>();
     
     public MiladAgent(String name, MailService mailbox) {
@@ -60,8 +66,8 @@ public class MiladAgent extends Agent{
         pauseMyTask = false;
         myTask = new task();
         hasTask = false;
-       
-//        
+        hasJob = false;
+        counter = 0;
     }
 
     @Override
@@ -98,17 +104,8 @@ public class MiladAgent extends Agent{
         System.out.println("Start me : "+getName()+" myTask : "+myTask.getAction()+myTask.getJob());
         //Percept
         makePerceptObjects();
-        //sayMyTool();
-    
-        /*for(int i=0; i<AP.getItemsInEnv().size();i++)
-        {
-            System.out.println("**** "+AP.getItemsInEnv().get(i).getName());
-            if(AP.getItemsInEnv().get(i).getSubItems().size() > 0 )
-            {
-                for(int j=0; j< AP.getItemsInEnv().get(i).getSubItems().size() ; j++)
-                    System.out.println("--- "+AP.getItemsInEnv().get(i).getSubItems().get(j).getSubItemName());
-            }
-        }*/
+        
+        
         if(actionQueue.size() > 0) 
         {
             return actionQueue.poll();
@@ -126,8 +123,11 @@ public class MiladAgent extends Agent{
         }
         
         if (hasTask == false && AP.getStep()>0)
-        {    
-                DefineRequirement();
+        {
+            //counter++;
+                //if(counter%3 == 0)
+            if(counter == 0)
+                    DefineRequirement();
                 chooseTask();
         }
         
@@ -143,7 +143,7 @@ public class MiladAgent extends Agent{
                 jobsTaken.add(stringParam(message.getParameters(), 0));
                 break;
             case "taskTaken":
-                task tempTask = new task(stringParam(message.getParameters(), 0),stringParam(message.getParameters(), 1),stringParam(message.getParameters(), 2),intParam(message.getParameters(), 3),stringParam(message.getParameters(), 4));
+                task tempTask = new task(stringParam(message.getParameters(), 0),stringParam(message.getParameters(), 1),stringParam(message.getParameters(), 2),stringParam(message.getParameters(), 3),Integer.parseInt(stringParam(message.getParameters(), 4)),stringParam(message.getParameters(), 5));
                 //System.out.println("TakenTasks Handle Message :  agentName"+getName()+tempTask.getAction()+tempTask.getJob() );
                 takenTasks.add(tempTask);
                 break;
@@ -157,6 +157,39 @@ public class MiladAgent extends Agent{
                     ;
                 else
                     Tools.get(stringParam(message.getParameters(), 0)).add(sender);
+                break;
+            case "AssembleTask":
+                task assembleTask = new task(stringParam(message.getParameters(), 0),stringParam(message.getParameters(), 1),stringParam(message.getParameters(), 2),stringParam(message.getParameters(), 3),intParam(message.getParameters(), 4),stringParam(message.getParameters(), 5));
+                assembleComplete.add(assembleTask);
+                List<task> l = DoingAssembles.get(assembleTask.getDestination());
+                for(int j=0; j<l.size(); j++)
+                {
+                    if(l.get(j).compareTo(assembleTask) == true)
+                    {
+                        DoingAssembles.get(assembleTask.getDestination()).remove(j);
+                        agentsDoingAssemble.get(assembleTask.getDestination()).remove(sender);
+                    }
+                }
+                counter = 0;
+                break;
+            case "IdoAssemble":
+                task DoingassembleTask = new task(stringParam(message.getParameters(), 0),stringParam(message.getParameters(), 1),stringParam(message.getParameters(), 2),stringParam(message.getParameters(), 3),intParam(message.getParameters(), 4),stringParam(message.getParameters(), 5));    
+                if(DoingAssembles.containsKey(DoingassembleTask.getDestination()) == false)
+                {
+                    DoingAssembles.putIfAbsent(DoingassembleTask.getDestination(), new ArrayList<task>());
+                }
+                if(DoingAssembles.containsKey(DoingassembleTask.getDestination()) == true)
+                {
+                    DoingAssembles.get(DoingassembleTask.getDestination()).add(DoingassembleTask);
+                }
+                if(agentsDoingAssemble.containsKey(DoingassembleTask.getDestination()) == false)
+                {
+                    agentsDoingAssemble.putIfAbsent(DoingassembleTask.getDestination(), new ArrayList<String>());
+                }
+                if(agentsDoingAssemble.containsKey(DoingassembleTask.getDestination()) == true)
+                {
+                    agentsDoingAssemble.get(DoingassembleTask.getDestination()).add(sender);
+                }
                 break;
         }
     }
@@ -187,6 +220,7 @@ public class MiladAgent extends Agent{
         {
             job tempJob = new job();
             tempJob = availableJobs.get(i);
+            //tempJob = availableJobs.get(0);
             DefinedJobs.add(tempJob);
             for(int j=0; j<tempJob.getJobRequireds().size();j++)
             {
@@ -194,18 +228,20 @@ public class MiladAgent extends Agent{
                 Integer itemAmount = tempJob.getJobRequireds().get(j).getRight();
                 storage tempStorage = AP.Storages.get(tempJob.getJobStorage());
                 item tempItem = AP.ItemsInEnv.get(itemName);
+                String WorkShop = findNearestWorkshop(tempStorage.getName());
                 ///tempItem , itemAmount
                 
                 // add tasks to list
                 if (tempItem.getSubItems().size() == 0)
                 {
                     
-                    DefinedTasks.add(new task(tempJob.getJobID(),"buy",itemName,itemAmount,findNearestshop(tempStorage.getName(),itemName,itemAmount, false)));
-                    DefinedTasks.add(new task(tempJob.getJobID(), "carryToStorage", itemName, itemAmount, tempStorage.getName()));
+                    DefinedTasks.add(new task(tempJob.getJobID(),"buy",itemName,itemName,itemAmount,findNearestshop(tempStorage.getName(),itemName,itemAmount, false)));
+                    DefinedTasks.add(new task(tempJob.getJobID(), "carryToStorage", itemName,itemName, itemAmount, tempStorage.getName()));
                      
                 }
-                /*else //tempItem is a multiItem
+                else //tempItem is a multiItem
                 {
+                    counter = 1;
                     for(int g=0; g<itemAmount ; g++)
                     {
                         for(int h = 0; h < tempItem.getSubItems().size(); h++)
@@ -215,16 +251,18 @@ public class MiladAgent extends Agent{
                             String tempSubItemName = tempSubItem.getSubItemName();
                             int tempSubItemAmount = tempSubItem.getSubItemAmount();
                             item subItem = AP.ItemsInEnv.get(tempSubItemName);
+                            
                             if(subItem.getSubItems().size() == 0)
                             {
                                 //System.out.println("|| tempSubItem is simple :)");
                                 //System.out.println("");
-                                DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempSubItemName,tempSubItemAmount,findNearestshop(tempStorage.getName(),tempSubItemName,tempSubItemAmount, true)));
-                                DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempSubItemName,tempSubItemAmount,findNearestWorkshop(tempStorage.getName())));
+                                DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempSubItemName,itemName ,tempSubItemAmount,findNearestshop(tempStorage.getName(),tempSubItemName,tempSubItemAmount, true)));
+                                DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempSubItemName,itemName,tempSubItemAmount,findNearestWorkshop(tempStorage.getName())));
                             }
                             else//tempSubItem is a multiItem
                             {
                                 //System.out.println("## tempSubItem is Multi :)");
+                                
                                 for(int v=0; v<subItem.getSubItems().size() ; v++)
                                 {
                                     subItem subSubItem = subItem.getSubItems().get(v);
@@ -237,8 +275,8 @@ public class MiladAgent extends Agent{
                                     if(tempSubSubItem.getSubItems().size() == 0)
                                     {
                                         //System.out.println("##^^^ || single subsubitem");
-                                        DefinedTasks.add(new task(tempJob.getJobID(),"buy",subSubItemName,subSubItemAmount,findNearestshop(tempStorage.getName(),subSubItemName,subSubItemAmount, true)));
-                                        DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subSubItemName,subSubItemAmount,findNearestWorkshop(tempStorage.getName())));
+                                        DefinedTasks.add(new task(tempJob.getJobID(),"buy",subSubItemName,tempSubItemName,subSubItemAmount,findNearestshop(tempStorage.getName(),subSubItemName,subSubItemAmount, true)));
+                                        DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subSubItemName,tempSubItemName,subSubItemAmount,WorkShop));
                                     }
                                     //multi
                                     else
@@ -250,16 +288,16 @@ public class MiladAgent extends Agent{
                                             String subSubSubItemName = subSubSubItem.getSubItemName();
                                             int subSubSubItemAmount = subSubSubItem.getSubItemAmount();
                                             //System.out.println("##^^^ ##^^^ "+subSubSubItemName+" "+subSubSubItemAmount);
-                                            DefinedTasks.add(new task(tempJob.getJobID(),"buy",subSubSubItemName,subSubSubItemAmount,findNearestshop(tempStorage.getName(),subSubSubItemName,subSubSubItemAmount, true)));
-                                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subSubSubItemName,subSubSubItemAmount,findNearestWorkshop(tempStorage.getName())));
+                                            DefinedTasks.add(new task(tempJob.getJobID(),"buy",subSubSubItemName,subSubItemName,subSubSubItemAmount,findNearestshop(tempStorage.getName(),subSubSubItemName,subSubSubItemAmount, true)));
+                                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subSubSubItemName,subSubItemName,subSubSubItemAmount,WorkShop));
                                         }//tools
                                         for(int k=0 ; k<tempSubSubItem.getTools().size();k++)
                                         {
                                             //System.out.println("##^^^ ##^^^ tempItem subtools :"+tempSubSubItem.getTools().get(k));
                                             //DefinedTasks.add(new task(tempJob.getJobID(),"buy",tempSubSubItem.getTools().get(k),1,findNearestshop(tempStorage.getName(),tempSubSubItem.getTools().get(k),1, true)));
-                                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempSubSubItem.getTools().get(k),1,findNearestWorkshop(tempStorage.getName())));
+                                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempSubSubItem.getTools().get(k),subSubItemName,1,WorkShop));
                                         }
-                                        DefinedTasks.add(new task(tempJob.getJobID(),"assemble",subSubItem.getSubItemName(),subSubItem.getSubItemAmount(),findNearestWorkshop(tempStorage.getName())));
+                                        DefinedTasks.add(new task(tempJob.getJobID(),"assemble",subSubItemName,tempSubItemName,subSubItem.getSubItemAmount(),WorkShop));
                                     }
                                     
                             
@@ -269,9 +307,9 @@ public class MiladAgent extends Agent{
                                 {
                                     //System.out.println("##^^^ tempItem subtools :"+subItem.getTools().get(v));
                                     //DefinedTasks.add(new task(tempJob.getJobID(),"buy",subItem.getTools().get(v),1,findNearestshop(tempStorage.getName(),subItem.getTools().get(v),1, true)));
-                                    DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subItem.getTools().get(v),1,findNearestWorkshop(tempStorage.getName())));
+                                    DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",subItem.getTools().get(v),tempSubItemName,1,WorkShop));
                                 }
-                                DefinedTasks.add(new task(tempJob.getJobID(),"assemble",tempSubItemName,tempSubItemAmount,findNearestWorkshop(tempStorage.getName())));
+                                DefinedTasks.add(new task(tempJob.getJobID(),"assemble",tempSubItemName,itemName,tempSubItemAmount,WorkShop));
                             }
                             
                         }
@@ -280,16 +318,18 @@ public class MiladAgent extends Agent{
                         {
                             //System.out.println("^^ tempItem subtools :"+tempItem.getTools().get(h));
                             //DefinedTasks.add(new task(tempJob.getJobID(),"buyForAssemble",tempItem.getTools().get(h),1,findNearestshop(tempStorage.getName(),tempItem.getTools().get(h),1, true)));
-                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempItem.getTools().get(h),1,findNearestWorkshop(tempStorage.getName())));
+                            DefinedTasks.add(new task(tempJob.getJobID(),"carryToWorkshop",tempItem.getTools().get(h),itemName,1,WorkShop));
                         }
                         //???
-                        DefinedTasks.add(new task(tempJob.getJobID(),"assemble",tempItem.getName(),itemAmount,findNearestWorkshop(tempStorage.getName())));
-                        DefinedTasks.add(new task(tempJob.getJobID(),"carryToStorage",tempItem.getName(),itemAmount,tempStorage.getName()));
+                        DefinedTasks.add(new task(tempJob.getJobID(),"assemble",itemName,itemName,itemAmount,WorkShop));
+                        DefinedTasks.add(new task(tempJob.getJobID(),"carryToStorage",itemName,itemName,itemAmount,tempStorage.getName()));
                     }
-                }*/
+                }
+                if(counter == 1)
+                    break;
             }
         }
-        
+        /*
        List<auction> availableMissions = new Vector<>();
         availableMissions = AP.getMissions();
         
@@ -330,7 +370,7 @@ public class MiladAgent extends Agent{
                     DefinedTasks.add(new task(tempJob.getAuctionID(), "carryToStorage", itemName, itemAmount, tempStorage.getName()));
                      
                 }
-                /*else //tempItem is a multiItem
+                else //tempItem is a multiItem
                 {
                     for(int g=0; g<itemAmount ; g++)
                     {
@@ -414,10 +454,10 @@ public class MiladAgent extends Agent{
                         DefinedTasks.add(new task(tempJob.getAuctionID(),"assemble",tempItem.getName(),itemAmount,findNearestWorkshop(tempStorage.getName())));
                         DefinedTasks.add(new task(tempJob.getAuctionID(),"carryToStorage",tempItem.getName(),itemAmount,tempStorage.getName()));
                     }
-                }*/
+                }
             }
         }
-        
+        */
         //for(int i=0; i<DefinedTasks.size();i++)
         //{
             //System.out.println("#1#ABCDE  DefinedRequirementAndTasks.get(i) : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getDestination()+DefinedTasks.get(i).getItem()+DefinedTasks.get(i).getJob()+DefinedTasks.get(i).getAmount());
@@ -518,9 +558,11 @@ public class MiladAgent extends Agent{
         if(param instanceof Numeral) return ((Numeral) param).getValue().intValue();
         return -1;
     }
+    
     private void chooseTask()
     {
-        
+        //List of tasks which I can do
+        List<task> canDo = new Vector<>();
         //avalable tasks
         for(int i=0; i<takenTasks.size();i++)
         {
@@ -530,17 +572,18 @@ public class MiladAgent extends Agent{
                 task Dtask = new task(DefinedTasks.get(j));
                 if(Ttask.compareTo(Dtask) == true)
                 {
+                    //System.out.println("Similar");
                     DefinedTasks.remove(j);
                     break;
                 }
             }
             //System.out.println("#2#TakenTasks : "+takenTasks.get(i).getAction()+takenTasks.get(i).getJob());
         }
-        //DefinedTasks.removeAll(takenTasks);
-        //for(int i=0; i<DefinedTasks.size();i++)
-        //{
-            //System.out.println("#3#DefinedTasks : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getJob());
-        //}
+        
+        for(int i=0; i<DefinedTasks.size();i++)
+        {
+           ;//System.out.println("#3#DefinedTasks : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getJob());
+        }
         //
         task tempTask = new task();
         tempTask = null;
@@ -553,21 +596,23 @@ public class MiladAgent extends Agent{
             {
                 
                 case "carryToWorkshop":
-                   /* if( AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()) 
+                    if( AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()) 
                       ||
                         AP.getSelfRole().haveTool(DefinedTasks.get(i).getItem())
                        )
                     {
-                         tempTask = DefinedTasks.get(i);
+                         //tempTask = DefinedTasks.get(i);
+                        canDo.add(DefinedTasks.get(i));
                          //System.out.println("initial tempTask");
-                    }*/
+                    }
                     break;
                 case "carryToStorage":
                     //System.out.println("#--# carryToStorage case");
                     if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
                     {
                         //System.out.println("#00# Have item :/)");
-                        tempTask = DefinedTasks.get(i);
+                        //tempTask = DefinedTasks.get(i);
+                        canDo.add(DefinedTasks.get(i));
                        // System.out.println("initial tempTask");
                      //myTask = DefinedTasks.get(i);
                      //takenTasks.add(myTask);
@@ -576,12 +621,143 @@ public class MiladAgent extends Agent{
                     break;
                 
                 case "assemble":
+                    if( AP.getSelfInfo().getLat() == AP.Workshops.get(DefinedTasks.get(i).getDestination()).getLat()
+                       &&
+                        AP.getSelfInfo().getLon() == AP.Workshops.get(DefinedTasks.get(i).getDestination()).getLon()
+                      )
+                    {
+                        canDo.add(DefinedTasks.get(i));
+                        //tempTask = DefinedTasks.get(i);
+                    }
                     
-                    
+                    break;
+                case "buy":
+                    canDo.add(DefinedTasks.get(i));
                     break;
             }
             
         }
+        //***
+        Map <String,List<task>>  currentTasks = new HashMap<>();
+        List<task> assembleTasks = new Vector<>();
+        List<task> carryToStorageTasks = new Vector<>();
+        List<task> CarryToWorkshopTasks = new Vector<>();
+        List<task> buyTasks = new Vector<>();
+        for(int i=0; i<canDo.size() ; i++)
+        {
+            task t = new task();
+            t = canDo.get(i);
+            System.out.println("canDo : "+t.getJob()+t.getAction()+t.getItem());
+            if((currentTasks.containsKey(t.getAction())) == false)
+            {
+          //      System.out.println("First of add action "+ t.getAction());
+                    currentTasks.putIfAbsent(t.getAction(), new ArrayList<task>());
+            }
+            if((currentTasks.containsKey(t.getAction())) == true )
+            {
+            //    System.out.println("Add action "+t.getAction());
+                currentTasks.get(t.getAction()).add(t);
+                if(t.getAction() == "assemble")
+                {
+                    assembleTasks.add(t);
+                }
+                else if(t.getAction() == "carryToStorage")
+                {
+                    carryToStorageTasks.add(t);
+                }
+                else if(t.getAction() == "carryToWorkshop")
+                {
+                    CarryToWorkshopTasks.add(t);
+                }
+                else if(t.getAction() == "buy")
+                {
+                    buyTasks.add(t);
+                }
+            }
+        }
+        
+               for(int i=0; i<assembleTasks.size() ; i++)
+                   System.out.println("*1* assembleTasks : "+assembleTasks.get(i).getJob()+assembleTasks.get(i).getAction()+assembleTasks.get(i).getItem());
+        
+                for(int i=0; i<carryToStorageTasks.size() ; i++)
+                   System.out.println("*2* carryToStorage : "+carryToStorageTasks.get(i).getJob()+carryToStorageTasks.get(i).getAction()+carryToStorageTasks.get(i).getItem());
+        
+                 for(int i=0; i<CarryToWorkshopTasks.size() ; i++)
+                   System.out.println("*3* CarryToWorkshop : "+CarryToWorkshopTasks.get(i).getJob()+CarryToWorkshopTasks.get(i).getAction()+CarryToWorkshopTasks.get(i).getItem());
+        
+            for(int i=0; i<buyTasks.size() ; i++)
+                   System.out.println("*4*buy : "+buyTasks.get(i).getJob()+buyTasks.get(i).getAction()+buyTasks.get(i).getItem());
+        
+        //***
+        boolean chTask = false;
+        if(assembleTasks != null && assembleTasks.size() > 0)
+        {
+            tempTask = assembleTasks.get(0);
+            broadcast(new Percept("IdoAssemble", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(myTask.getTopItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
+            chTask = true;
+        }
+        else if(carryToStorageTasks != null && carryToStorageTasks.size() > 0)
+        {
+            for(int i=0 ; i<carryToStorageTasks.size() ; i++)
+            {
+                if(AP.Jobs.get(carryToStorageTasks.get(i).getJob()).isIsSimple() == true)
+                {
+                    tempTask = carryToStorageTasks.get(i);
+                    chTask = true;
+                    break;
+                }
+            }
+        }
+        if(chTask == false)
+        {
+            if(CarryToWorkshopTasks !=null && CarryToWorkshopTasks.size() > 0)
+            {
+                tempTask = CarryToWorkshopTasks.get(0);
+                chTask = true;
+            }
+            else if(carryToStorageTasks != null && carryToStorageTasks.size() > 0)
+            {
+                tempTask = carryToStorageTasks.get(0);
+                chTask = true;
+            }
+            else
+            {
+                if(buyTasks != null)
+                {
+                for(int i=0; i<buyTasks.size() ; i++)
+                {
+                     if(AP.Jobs.get(buyTasks.get(i).getJob()) != null && AP.Jobs.get(buyTasks.get(i).getJob()).isIsSimple() == true)
+                     {
+                        tempTask = buyTasks.get(i);
+                        chTask = true;
+                        break;
+                     }
+                }
+                }
+            }
+        }
+        if(chTask == false)
+        {
+            if(buyTasks != null && buyTasks.size() > 0)
+            {
+                for(int i=0 ; i<buyTasks.size() ; i++)
+                {
+                    dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Shops.get(buyTasks.get(i).getDestination()).getShopLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Shops.get(buyTasks.get(i).getDestination()).getShopLon(),2) );
+                            if(dist < minDistance)
+                            {
+                                tempTask = buyTasks.get(i);
+                                minDistance = dist;
+
+                                //System.out.println("initial tempTask");
+                            }
+                }
+            }
+            else
+            {
+                //there is no task to do
+            }
+        }
+        /*
         if(tempTask == null || tempTask.getJob() == null)
         {
             for(int i=0 ; i<DefinedTasks.size() ; i++)
@@ -607,7 +783,7 @@ public class MiladAgent extends Agent{
                 }
             }
         }
-        
+        */
         //System.out.println("ABCDE choose task -> tempTask : "+tempTask.getAction()+tempTask.getDestination()+tempTask.getItem()+tempTask.getJob()+tempTask.getAmount());
             if(tempTask != null && tempTask.getAction() != null )
             {
@@ -627,8 +803,9 @@ public class MiladAgent extends Agent{
                     myTask = tempTask;
                     takenTasks.add(myTask);
                     hasTask = true;
+                    System.out.println(String.valueOf(myTask.getAmount()));
                     System.out.println("#4#ABCDE choose task -> myTask : "+myTask.getAction()+tempTask.getDestination()+myTask.getItem()+myTask.getJob()+myTask.getAmount());
-                    broadcast(new Percept("taskTaken", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
+                    broadcast(new Percept("taskTaken", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(myTask.getTopItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
                 /*}*/
             }
           
@@ -815,8 +992,20 @@ public class MiladAgent extends Agent{
              //arrive to workshop
              System.out.println("--- arrive to workshop ---");
              //waiting test
-             //hasTask = false;
-             //actionQueue.clear();
+             List<task> doingAssembleTasks = new Vector<>();
+             doingAssembleTasks = DoingAssembles.get(myTask.getDestination());
+             if(doingAssembleTasks != null && doingAssembleTasks.size() > 0)
+             {
+                 for(int i=0 ; i<agentsDoingAssemble.get(myTask.getDestination()).size() ; i++)
+                 {
+                     actionQueue.add(new Action("assist_assemble", new Identifier(agentsDoingAssemble.get(myTask.getDestination()).get(i))));
+                 }
+             }
+             else
+             {
+                hasTask = false;
+                actionQueue.clear();
+             }
              return;
          }
         // int routeLength = AP.getRouteLength();
@@ -833,15 +1022,156 @@ public class MiladAgent extends Agent{
      }
      private void assemble()
      {
+          if(AP.getSelfInfo().haveItem(myTask.getItem(), myTask.getAmount()) || assembleComplete.contains(myTask.getJob()) == true)
+          {
+           hasTask = false;  
+           actionQueue.clear();
+           broadcast(new Percept("AssembleTask", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(myTask.getTopItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
+           return;
+          }
+          
           actionQueue.add(new Action("assemble", new Identifier(myTask.getItem())));
-          actionQueue.add(new Action("assemble", new Identifier(myTask.getItem())));
+//        List <String> inWorkshop = new Vector <>();
+//        for (int i = 1 ; i < 29 ; i++)
+//        {
+//            String agentName = "agentA" + i ;
+//            System.out.println("ABCDEF "+agentName);
+//            if (AP.Entities.get(agentName).getLat() == AP.getSelfInfo().getLat() && AP.Entities.get(agentName).getLon() == AP.getSelfInfo().getLon() && agentName != AP.getSelfInfo().getName())
+//            {
+//                System.out.println(agentName +"IS in Workshop");
+//                inWorkshop.add(agentName);
+//                actionQueue.add(new Action("assist_assemble", new Identifier(agentName)));
+//            }
+//        }
+          //actionQueue.add(new Action("assemble", new Identifier(myTask.getItem())));
           //myTask = null;
-          hasTask = false;
+          
      }
      public static String stringParam(List<Parameter> params, int index){
         if(params.size() < index + 1) return "";
         Parameter param = params.get(index);
         if(param instanceof Identifier) return ((Identifier) param).getValue();
         return "";
+    }
+     private void chooseTask1()
+    {
+        //avalable tasks
+        for(int i=0; i<takenTasks.size();i++)
+        {
+            task Ttask = new task(takenTasks.get(i));
+            for(int j=0; j<DefinedTasks.size();j++)
+            {   
+                task Dtask = new task(DefinedTasks.get(j));
+                if(Ttask.compareTo(Dtask) == true)
+                {
+                    DefinedTasks.remove(j);
+                    break;
+                }
+            }
+            //System.out.println("#2#TakenTasks : "+takenTasks.get(i).getAction()+takenTasks.get(i).getJob());
+        }
+        //DefinedTasks.removeAll(takenTasks);
+        for(int i=0; i<DefinedTasks.size();i++)
+        {
+            System.out.println("#3#DefinedTasks : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getJob());
+        }
+        //
+        task tempTask = new task();
+        tempTask = null;
+        double dist;
+        double minDistance = Double.MAX_VALUE;
+        for(int i=0 ; i<DefinedTasks.size() ; i++)
+        {
+            //System.out.println("choose task -> DefinedTasks.get(i) : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getDestination()+DefinedTasks.get(i).getItem()+DefinedTasks.get(i).getJob()+DefinedTasks.get(i).getAmount());
+            switch(DefinedTasks.get(i).getAction())
+            {
+                
+                case "carryToWorkshop":
+                    if( AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()) 
+                      ||
+                        AP.getSelfRole().haveTool(DefinedTasks.get(i).getItem())
+                       )
+                    {
+                         tempTask = DefinedTasks.get(i);
+                         //System.out.println("initial tempTask");
+                    }
+                    break;
+                case "carryToStorage":
+                    //System.out.println("#--# carryToStorage case");
+                    if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
+                    {
+                        //System.out.println("#00# Have item :/)");
+                        tempTask = DefinedTasks.get(i);
+                       // System.out.println("initial tempTask");
+                     //myTask = DefinedTasks.get(i);
+                     //takenTasks.add(myTask);
+                     //broadcast(new Percept("taskTaken", new Identifier(DefinedTasks.get(i).getJob()),new Identifier(DefinedTasks.get(i).getAction()),new Identifier(DefinedTasks.get(i).getItem()),new Identifier(String.valueOf(DefinedTasks.get(i).getAmount())),new Identifier(DefinedTasks.get(i).getDestination())), getName());
+                    }
+                    break;
+                
+                case "assemble":
+                    if( AP.getSelfInfo().getLat() == AP.Workshops.get(DefinedTasks.get(i).getDestination()).getLat()
+                       &&
+                        AP.getSelfInfo().getLon() == AP.Workshops.get(DefinedTasks.get(i).getDestination()).getLon()
+                      )
+                    {
+                        tempTask = DefinedTasks.get(i);
+                    }
+                    break;
+                 
+            }
+            
+        }
+        /*
+        if(tempTask == null || tempTask.getJob() == null)
+        {
+            for(int i=0 ; i<DefinedTasks.size() ; i++)
+            {
+                //System.out.println("choose task -> DefinedTasks.get(i) : "+DefinedTasks.get(i).getAction()+DefinedTasks.get(i).getDestination()+DefinedTasks.get(i).getItem()+DefinedTasks.get(i).getJob()+DefinedTasks.get(i).getAmount());
+                switch(DefinedTasks.get(i).getAction())
+                {
+                    case "buy":
+        //                    if(AP.getSelfInfo().haveItem(DefinedTasks.get(i).getItem(), DefinedTasks.get(i).getAmount()))
+        //                    {
+        //                        //no need to buy and remove this task
+        //                        tempTask.setAction("NoAction");
+        //                    }
+                            dist = Math.sqrt( Math.pow(AP.getSelfInfo().getLat()-AP.Shops.get(DefinedTasks.get(i).getDestination()).getShopLat(),2) + Math.pow(AP.getSelfInfo().getLon()-AP.Shops.get(DefinedTasks.get(i).getDestination()).getShopLon(),2) );
+                            if(dist < minDistance)
+                            {
+                                tempTask = DefinedTasks.get(i);
+                                minDistance = dist;
+
+                                //System.out.println("initial tempTask");
+                            }
+                            break;
+                }
+            }
+        }*/
+        
+        System.out.println("ABCDE choose task -> tempTask : "+tempTask.getAction()+tempTask.getDestination()+tempTask.getItem()+tempTask.getJob()+tempTask.getAmount());
+            if(tempTask != null && tempTask.getAction() != null )
+            {
+                
+                for(int i=0; i<takenTasks.size();i++)
+                {
+                    task Ttask = new task(takenTasks.get(i));
+                    
+                        if(Ttask.compareTo(tempTask) == true)
+                        {
+                            System.out.println("#!!# You cannot choose any task"+tempTask.getAction()+tempTask.getJob());
+                            return;
+                        }
+                }
+                /*if(takenTasks.contains(tempTask) == false)
+                {*/
+                    myTask = tempTask;
+                    takenTasks.add(myTask);
+                    hasTask = true;
+                    System.out.println("#4#ABCDE choose task -> myTask : "+myTask.getAction()+tempTask.getDestination()+myTask.getItem()+myTask.getJob()+myTask.getAmount());
+                    broadcast(new Percept("taskTaken", new Identifier(myTask.getJob()),new Identifier(myTask.getAction()),new Identifier(myTask.getItem()),new Identifier(String.valueOf(myTask.getAmount())),new Identifier(myTask.getDestination())), getName());
+                /*}*/
+            }
+          
     }
 }
